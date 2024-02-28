@@ -39,7 +39,7 @@
         <el-table-column type="selection" width="40" />
         <el-table-column prop="codeClsName" label="标准代码分类名称" />
         <el-table-column prop="codeClsType" label="标准代码分类类型" />
-        <el-table-column prop="validFlag" label="生效状态" />
+        <el-table-column prop="validFlagName" label="生效状态" />
         <el-table-column prop="validDate" label="生效时间" />
         <el-table-column prop="invalidDate" label="失效时间" />
         <el-table-column fixed="right" label="操作" >
@@ -105,7 +105,7 @@
         <el-table-column type="selection" width="40" />
         <el-table-column prop="codeClsValName" label="标准代码值名称" />
         <el-table-column prop="codeClsVal" label="标准代码值" />
-        <el-table-column prop="validFlag" label="生效状态" />
+        <el-table-column prop="validFlagName" label="生效状态" />
         <el-table-column prop="validDate" label="生效时间" />
         <el-table-column prop="invalidDate" label="失效时间" />
         <el-table-column fixed="right" label="操作" >
@@ -379,6 +379,11 @@ export default {
             queryCodeClsList(this.codeClsQueryParam).then(res => {
                 if (res.code == '00000') {
                     console.log('--- 查询标准代码分类列表出参 ---', res)
+
+                    res.data.forEach((value, index, array) => {
+                        value.validFlagName = this.getValidFlagNameByOption(value.validFlag);
+                    });
+
                     this.codeClsList = res.data
                     this.codeClsPageInfo.total = res.total
                     this.codeClsTableActivityIndex = ''
@@ -682,10 +687,25 @@ export default {
             queryCodeClsValList(data).then(res => {
                 if (res.code == '00000') {
                     console.log('--- 查询标准代码值列表出参 ---', res)
+
+                    res.data.forEach((value, index, array) => {
+                        value.validFlagName = this.getValidFlagNameByOption(value.validFlag);
+                    });
+
                     this.codeClsValList = res.data
                     this.codeClsValPageInfo.total = res.total
                 }
             })
+        },
+        getValidFlagNameByOption (validFlag) {
+
+            for (let i = 0; i < this.validFlagOptions.length; i++) {
+                if (this.validFlagOptions[i].value === validFlag) {
+                    return this.validFlagOptions[i].label
+                }
+            }
+
+            return validFlag;
         },
         closedDialog (formName) {
             this.$refs[formName].resetFields();
@@ -702,7 +722,7 @@ export default {
                                 options.push({value: value.codeClsVal, label: value.codeClsValName})
                             });
                             this.validFlagOptions = options
-                        }
+                        } 
                     })
                 }
             })
