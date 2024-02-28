@@ -1,0 +1,25 @@
+### 获取词牌名列表
+
+POST http://localhost:8888/songCi/querySongCiList HTTP/1.1
+Content-Type: application/json
+
+{
+    "pageNo": 1,
+    "pageSize": 2
+}
+
+### 获取项目资金计划列表
+
+POST http://localhost:8888/codeCls/createCodeClsList HTTP/1.1
+Content-Type: application/json
+
+[{}]
+
+### 获取项目资金计划列表
+
+POST http://localhost:8888/projectFundPlan/queryFundPlanList HTTP/1.1
+Content-Type: application/json
+
+{
+    
+}
