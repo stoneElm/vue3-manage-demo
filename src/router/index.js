@@ -1,6 +1,7 @@
 
 import {createRouter, createWebHashHistory} from "vue-router";
 
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import Login from '../views/login/login.vue'
 import Layout from '../layout/index.vue'
 
@@ -36,7 +37,7 @@ const routes = [
 					icon: 'House'
 				},
 				/** 在src/views 文件下创建home文件 */
-				component: () => import("../components/HelloWorld.vue"),
+				component: () => import("@/components/HelloWorld.vue"),
 			},
 			{
 				path: "/system",
@@ -56,7 +57,7 @@ const routes = [
 							icon: 'House'
 						},
 						/** 在src/views 文件下创建home文件 */
-						component: () => import("../views/system/systemParam.vue"),
+						component: () => import("@/views/system/systemParam.vue"),
 					},
 					{
 						path: "/codeCls",
@@ -66,39 +67,53 @@ const routes = [
 							icon: 'House'
 						},
 						/** 在src/views 文件下创建home文件 */
-						component: () => import("../views/system/codeCls.vue"),
+						component: () => import("@/views/system/codeCls.vue"),
 					}
 				]
 			},
 			{
-				path: "/projectFund",
-				name: "projectFund",
+				path: "/siteSkills",
+				name: "siteSkills",
 				meta: {
-					title: '项目管理',
+					title: '站点技术',
 					icon: 'Grid'
 				},
-				/** 在src/views 文件下创建system文件 */
-				// component: () => import("../views/projectFund/index.vue"),
+				/** 在src/views 文件下创建siteSkills文件夹 */
+				// component: () => import("../views/siteSkills/index.vue"),
 				children: [
 					{
-						path: "/agrtManage",
-						name: "agrtManage",
+						path: "/storageSkills",
+						name: "storageSkills",
 						meta: {
-							title: '合同管理',
+							title: '储存技术',
 							icon: 'House'
 						},
-						/** 在src/views 文件下创建home文件 */
-						component: () => import("../views/projectFund/agrtManage.vue"),
-					},
-					{
-						path: "/orderManage",
-						name: "orderManage",
-						meta: {
-							title: '订单管理',
-							icon: 'House'
-						},
-						/** 在src/views 文件下创建home文件 */
-						component: () => import("../views/projectFund/orderManage.vue"),
+
+						children: [
+							{
+								path: "/mysqlSkill",
+								name: "mysqlSkill",
+								meta: {
+									title: 'MYSQL数据库',
+									icon: 'House'
+								},
+								/** 在src/views 文件下创建home文件 */
+								component: () => import("@/views/siteSkills/storageSkills/mysqlSkill.vue"),
+							},
+							{
+								path: "/redisSkill",
+								name: "redisSkill",
+								meta: {
+									title: 'Redis缓存',
+									icon: 'House'
+								},
+								/** 在src/views 文件下创建home文件 */
+								component: () => import("@/views/siteSkills/storageSkills/redisSkill.vue"),
+							}
+						]
+		
+
+
 					}
 				]
 
