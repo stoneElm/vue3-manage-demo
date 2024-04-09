@@ -1,5 +1,5 @@
 <template>
-    <div class="common-layout">
+    <div class="common-layout main-layout-class">
         <el-container>
             <el-header class="header">
                 <Header></Header>
@@ -37,6 +37,9 @@ export default {
 </script>
 
 <style>
+    .main-layout-class {
+        padding: 8px;
+    }
     .aside{
 		height: calc(100vh - 64px - 16px);
 		background-color: #545c64;

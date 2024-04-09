@@ -1,7 +1,7 @@
 <template>
   <!-- <HelloWorld/> -->
   <el-config-provider :locale="locale">
-    <router-view/>
+    <router-view class="main-router-view-class"/>
   </el-config-provider>
 </template>
 
@@ -31,7 +31,7 @@ export default {
 <style>
 body {
   padding: 0px;
-  margin: 8px;
+  margin: 0px;
 }
 
 #app {

@@ -18,6 +18,12 @@ service.interceptors.request.use(
     config => {
         console.log('--- 开始请求接口 ---' + config.url)
 
+        // 请求携带token
+        const token = sessionStorage.getItem('token'); 
+        if (token) {
+            config.headers['token'] = `${token}`; 
+        }
+
         return config;
     },
     error => {

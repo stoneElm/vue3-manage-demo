@@ -33,6 +33,7 @@ const routes = [
 				path: "/home",
 				name: "home",
 				meta: {
+					not_login_required: true,
 					title: '首页',
 					icon: 'House'
 				},
@@ -43,6 +44,7 @@ const routes = [
 				path: "/system",
 				name: "system",
 				meta: {
+					not_login_required: false,
 					title: '系统概况',
 					icon: 'Grid'
 				},
@@ -75,6 +77,7 @@ const routes = [
 				path: "/siteSkills",
 				name: "siteSkills",
 				meta: {
+					not_login_required: false,
 					title: '站点技术',
 					icon: 'Grid'
 				},
@@ -126,6 +129,17 @@ const routes = [
 const router = createRouter({
 	history:createWebHashHistory(),
 	routes
+});
+
+router.beforeEach((to, from, next) => {
+	let not_login_required = to.matched.some((record) => {return record.meta.not_login_required});
+	
+	// 判断是否已经登陆,是否本身就是登陆页面,是否必须登录
+	if (!sessionStorage.getItem('token') && to.fullPath !== '/login' && !not_login_required) {
+		next('/login');
+	} else {
+		next();
+	}
 });
 
 export default router;

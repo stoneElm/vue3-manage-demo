@@ -1,5 +1,4 @@
 import requert from "@/utils/request.js";
-import axios from 'axios';
 import api from "@/api/api.js";
 
 var baseURL = api.defaults.baseURL;

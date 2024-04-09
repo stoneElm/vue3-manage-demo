@@ -1,12 +1,12 @@
 <template>
     <!-- 导航条部分 -->
     <div class="icon">
-		<el-icon v-if="show" @click="change">
+		<!-- <el-icon v-if="show" @click="change">
 			<Fold />
 		</el-icon>
 		<el-icon v-else @click="change">
 			<Expand />
-		</el-icon>
+		</el-icon> -->
 	</div>
     <el-breadcrumb separator=">">
         <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
