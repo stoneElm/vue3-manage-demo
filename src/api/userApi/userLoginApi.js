@@ -9,3 +9,10 @@ export const userLogin = (data) =>
         url: baseURL + '/user/userLogin/login',
         data
     })
+
+export const logout = (data) =>
+    requert({
+        method: "POST",
+        url: baseURL + '/user/userLogin/logout',
+        data
+    })

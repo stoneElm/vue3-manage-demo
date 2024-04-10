@@ -26,8 +26,45 @@
 </template>
 
 <script>
+import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
+import {
+    logout
+} from '@/api/userApi/userLoginApi'
 export default {
+	data() {
+		return {
+			
+		}
+	},
 
+	methods: {
+		exit() {
+			ElMessageBox.confirm(
+    			'退出登陆后再次访问页面需重新输入用户凭证信息!',
+    			'确定退出？',
+    			{
+      				confirmButtonText: '确认',
+      				cancelButtonText: '取消',
+      				type: 'warning',
+      				draggable: true,
+    			}
+  			)		
+    		.then(() => {
+      			console.log("确定退出")
+				  logout({}).then(res => {
+                	if (res.code == '00000') {
+                    	console.log('--- 发起退出登录请求出参 ---', res)
+						sessionStorage.removeItem('token'); 
+                   		this.$router.push('/login');
+                	}
+            	})
+
+    		})
+    		.catch(() => {
+				
+			})
+		}
+	}
 }
 </script>
 

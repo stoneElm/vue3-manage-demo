@@ -20,6 +20,7 @@ service.interceptors.request.use(
 
         // 请求携带token
         const token = sessionStorage.getItem('token'); 
+        
         if (token) {
             config.headers['token'] = `${token}`; 
         }
