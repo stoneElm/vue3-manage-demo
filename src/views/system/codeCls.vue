@@ -543,22 +543,13 @@ export default {
             this.codeClsValDialogTitle="编辑标准代码值信息"
             this.codeClsValEditFlag = true
             this.codeClsValDialog = true;
-            
-            api.post("/system/codeCls/queryCodeClsValList", queryParam).then((resp)=>{
-                if (resp && resp.status === 200) {
-                    if (resp.data && resp.data.code === '00000') {
-                        if (resp.data.data && resp.data.data[0]) {
-                            this.saveCodeClsValParam = resp.data.data[0]
-                            this.saveCodeClsValParam.codeClsType = this.codeClsValQueryParam.codeClsType
-                        } else {
-                            ElMessage.error('查询当前标准代码值信息失败,请稍后重试!');
-                        }
-                    } else {
-                        let message = resp.data.message || '系统异常,请稍后重试!'
-                        ElMessage.error(message);
-                    }
-                } else {
-                    ElMessage.error('服务请求失败,请稍后重试!');
+
+            queryCodeClsValList(queryParam).then(res => {
+                if (res.code == '00000') {
+                    console.log('--- 查询标准代码分类值列表出参 ---', res)
+
+                    this.saveCodeClsValParam = res.data[0]
+                    this.saveCodeClsValParam.codeClsType = this.codeClsValQueryParam.codeClsType
                 }
             })
         },

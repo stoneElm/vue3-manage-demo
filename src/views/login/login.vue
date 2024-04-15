@@ -16,7 +16,7 @@
                                     <el-input v-model="loginInfo.userName" size="large" placeholder="用户名" prefix-icon="User" clearable />
                                 </el-form-item>
                                 <el-form-item prop="password">
-                                    <el-input v-model="loginInfo.password" size="large" placeholder="密码" prefix-icon="Key" type="password" clearable />
+                                    <el-input v-model="loginInfo.password" size="large" placeholder="密码" prefix-icon="Key" type="password" @keyup.enter="requestLogin('passwordLoginRef')" clearable />
                                 </el-form-item>
                             </el-form>
                             <el-form ref="userPhoneLoginRef" v-if="loginInfo.loginModel==='02'" :inline="false" :model="loginInfo" class="demo-form-inline" :rules="loginInfoPhoneRules">
@@ -29,7 +29,7 @@
                                 <el-form-item prop="verificationCode">
                                     <el-row :gutter="20">
                                         <el-col :span="17">
-                                            <el-input v-model="loginInfo.verificationCode" size="large" placeholder="验证码" prefix-icon="Key" clearable />
+                                            <el-input v-model="loginInfo.verificationCode" size="large" placeholder="验证码" prefix-icon="Key" @keyup.enter="requestLogin('userPhoneLoginRef')" clearable />
                                         </el-col>
                                         <el-col :span="3" style="height: 12px; margin-top: 12px;">
                                             <el-button :disabled="countdown > 0" link type="primary" size="small" @click="getVerificationCode">{{ getVerificationCodeText }}</el-button>
@@ -161,7 +161,7 @@ export default {
             userLogin(this.loginInfo).then(res => {
                 if (res.code == '00000') {
                     console.log('--- 发起登录请求出参 ---', res)
-                    sessionStorage.setItem('token', res.data.token);
+                    sessionStorage.setItem('Stone-Token', res.data.token);
                     this.$router.push('/');
                 }
             })

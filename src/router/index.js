@@ -135,7 +135,7 @@ router.beforeEach((to, from, next) => {
 	let not_login_required = to.matched.some((record) => {return record.meta.not_login_required});
 	
 	// 判断是否已经登陆,是否本身就是登陆页面,是否必须登录
-	if (!sessionStorage.getItem('token') && to.fullPath !== '/login' && !not_login_required) {
+	if (!sessionStorage.getItem('Stone-Token') && to.fullPath !== '/login' && !not_login_required) {
 		next('/login');
 	} else {
 		next();

@@ -54,7 +54,7 @@ export default {
 				  logout({}).then(res => {
                 	if (res.code == '00000') {
                     	console.log('--- 发起退出登录请求出参 ---', res)
-						sessionStorage.removeItem('token'); 
+						sessionStorage.removeItem('Stone-Token'); 
                    		this.$router.push('/login');
                 	}
             	})

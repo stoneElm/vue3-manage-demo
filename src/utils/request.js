@@ -19,10 +19,10 @@ service.interceptors.request.use(
         console.log('--- 开始请求接口 ---' + config.url)
 
         // 请求携带token
-        const token = sessionStorage.getItem('token'); 
+        const token = sessionStorage.getItem('Stone-Token'); 
         
         if (token) {
-            config.headers['token'] = `${token}`; 
+            config.headers['Stone-Token'] = `${token}`; 
         }
 
         return config;
@@ -90,24 +90,32 @@ service.interceptors.response.use(
     error => {
         console.log('error', error);
 
+        let status;
         let message = '请求错误，请稍后重试！';
 
-        if (error && error.response && error.response.data && error.response.data.message && error.response.status === 500) {
-            message = error.response.data.message
+        if (error && error.response && error && error.response.status) {
+            status = error.response.status
         }
 
-        if (loding) {
-            loding.close();
+        if (status === 403) {
+            message = "登陆过期";
+            ElMessage({
+                message: message,
+                type: 'error',
+                duration: 3.5 * 1000
+            })
+            sessionStorage.removeItem('Stone-Token'); 
+            this.$router.push('/login');
+            return
         }
 
-        ElMessage({
-            message: message,
-            type: 'error',
-            duration: 3.5 * 1000
-        })
-
-        if (error && error.response && error.response.data && error.response.data.message && error.response.status === 500) {
-            return error.response.data;
+        if (status === 500) {
+            ElMessage({
+                message: message,
+                type: 'error',
+                duration: 3.5 * 1000
+            })
+            return
         }
 
         return;
