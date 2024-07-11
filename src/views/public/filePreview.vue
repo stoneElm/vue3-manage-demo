@@ -187,9 +187,11 @@
 .audio-logo {
     height: 200px;
     width: 200px;
-    background-image: url("@/assets/image/filePreview/audio_logo.png");
+    background-image: url("@/assets/image/filePreview/audio_logo.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
+    border-radius: 100px;
+    margin-bottom: 20px;
 }
 </style>
