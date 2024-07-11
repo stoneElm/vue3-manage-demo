@@ -20,6 +20,7 @@ app.use(ElementPlus)
 // 加载路由
 app.use(router);
 
+
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }

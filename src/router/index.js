@@ -1,10 +1,10 @@
 
-import {createRouter, createWebHashHistory} from "vue-router";
+import {createRouter, createWebHashHistory, createWebHistory} from "vue-router";
 
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import Login from '../views/login/login.vue'
-import Layout from '../layout/index.vue'
-
+import Login from '@/views/login/login.vue'
+import Layout from '@/layout/index.vue'
+import FilePreview from '@/views/public/filePreview.vue'
 
 // 定义路由组件信息
 const routes = [
@@ -20,6 +20,11 @@ const routes = [
 		path: '/login', 
 		name: 'login', 
 		component: Login,
+	},
+	{
+		path: '/filePreview', 
+		name: 'filePreview', 
+		component: FilePreview,
 	},
 	{
 		path: '/', 
@@ -70,6 +75,27 @@ const routes = [
 						},
 						/** 在src/views 文件下创建home文件 */
 						component: () => import("@/views/system/codeCls.vue"),
+					}
+				]
+			},
+			{
+				path: "/personalModule",
+				name: "personalModule",
+				meta: {
+					not_login_required: false,
+					title: '个人模块',
+					icon: 'Grid'
+				},
+				children: [
+					{
+						path: "/personalFileManage",
+						name: "personalFileManage",
+						meta: {
+							title: '文件管理',
+							icon: 'House'
+						},
+						/** 在src/views 文件下创建home文件 */
+						component: () => import("@/views/personalModule/personalFileManage.vue")
 					}
 				]
 			},
@@ -127,7 +153,7 @@ const routes = [
 
 // 创建路由对象
 const router = createRouter({
-	history:createWebHashHistory(),
+	history: createWebHistory(),
 	routes
 });
 
@@ -136,7 +162,11 @@ router.beforeEach((to, from, next) => {
 	
 	// 判断是否已经登陆,是否本身就是登陆页面,是否必须登录
 	if (!sessionStorage.getItem('Stone-Token') && to.fullPath !== '/login' && !not_login_required) {
-		next('/login');
+		if (to.fullPath === '/filePreview') {
+			next();
+		} else {
+			next('/login');
+		}
 	} else {
 		next();
 	}

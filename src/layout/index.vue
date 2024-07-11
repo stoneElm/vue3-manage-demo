@@ -38,10 +38,10 @@ export default {
 
 <style>
     .main-layout-class {
-        padding: 8px;
+        padding: 0px;
     }
     .aside{
-		height: calc(100vh - 64px - 16px);
+		height: calc(100vh - 64px - 0px);
 		background-color: #545c64;
 	}
 	.header{
@@ -54,7 +54,8 @@ export default {
 		border-bottom: 1px solid #c9c6c6;
 	}
     .main-main {
-        height: calc(100vh - 64px - 16px - 48px);
+        padding: 20px;
+        height: calc(100vh - 64px - 0px - 48px);
     }
     .el-scrollbar__bar.is-horizontal>div {
         height: 0px;

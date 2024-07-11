@@ -104,8 +104,11 @@ service.interceptors.response.use(
                 type: 'error',
                 duration: 3.5 * 1000
             })
-            sessionStorage.removeItem('Stone-Token'); 
+
+            sessionStorage.removeItem('Stone-Token');
+			sessionStorage.removeItem('stoneFileToken');
             this.$router.push('/login');
+
             return
         }
 

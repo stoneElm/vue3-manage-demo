@@ -25,7 +25,7 @@ Content-Type: application/json
 
 POST http://localhost:8888/system/codeCls/queryCodeClsList HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwOThmNTIwYzFhYTk0NDNmYjIzNDY0MzE0YTk5Zjc1YyIsInN1YiI6IjQiLCJpc3MiOiJzdG9uZSIsImlhdCI6MTcxMTYyNjI2NiwiZXhwIjoxNzExNjI5ODY2fQ.SLpfd9qxQH05NYT8Rk_pChNQCzYRwtr9hPXJwc0f3BQ
+Stone-Token: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0MGMxOThiNDgzYTM0NTg4OGZiOTc4YjZhMjA0MzgwZiIsInN1YiI6IjQiLCJpc3MiOiJzdG9uZSIsImlhdCI6MTcyMDU5NDQwNiwiZXhwIjoxNzIwNTk4MDA2fQ.O9ZZ2qYf2iVKGli8VUAL13uo0_P7iFeCE6cfjAIAlSg
 
 {  
     

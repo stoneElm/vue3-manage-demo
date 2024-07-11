@@ -162,6 +162,7 @@ export default {
                 if (res.code == '00000') {
                     console.log('--- 发起登录请求出参 ---', res)
                     sessionStorage.setItem('Stone-Token', res.data.token);
+                    sessionStorage.setItem('stoneFileToken', res.data.fileToken);
                     this.$router.push('/');
                 }
             })
@@ -172,7 +173,7 @@ export default {
 
 <style>
 .login-body {
-    background-image: url("../../assets/image/login/login_background.jpg");
+    background-image: url("@/assets/image/login/login_background.jpg");
     background-size: cover;
     height: 100vh;
     opacity: 0.8;
