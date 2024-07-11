@@ -1,8 +1,20 @@
 <template>
     <div class="common-layout file-preview">
         <el-container class="preview-body">
+            <!-- 视频 -->
             <div ref="playerContainer" v-show="isPlayer"></div>
-            <div class="file-preview-center" v-show="!isPlayer">文件加载中</div>
+
+            <!-- 音频 -->
+            <div v-show="isAudio" class='file-preview-center'>
+                <div class="audio-name file-preview-center">{{ audioName }}</div>
+                <div class="audio-logo file-preview-center"></div>
+                <audio ref="audioContainer" autoplay controls :src="audioSource"></audio>
+            </div>
+
+            <!-- 无法获取文件 -->
+            <div class="file-preview-center" v-show="isLoadFail">
+                
+            </div>
         </el-container>
     </div>
 </template>
@@ -20,7 +32,12 @@
     } from '@/api/attachApi/attachApi'
    
     const playerContainer = ref(null);
+    const audioContainer = ref(null);
+    const audioSource = ref('');
+    const audioName = ref('');
     var isPlayer = ref(false);
+    var isAudio = ref(false);
+    var isLoadFail = ref(true);
 
     let player;
 
@@ -46,7 +63,7 @@
         console.log('----- onBeforeUnmount -----')
         if (playerContainer) {
             console.log('----- 开始销毁 -----')
-            player.destroy();
+            player.value.destroy();
         }
     });
 
@@ -78,8 +95,15 @@
             console.log('----- filePreview -----', filePreview)
 
             if (filePreview.attachDtlType === 'video') {
-                isPlayer.value = ref(true)
+                isPlayer.value = true
+                isLoadFail.value = false
                 initPlayer();
+            }
+
+            if (filePreview.attachDtlType === 'audio') {
+                isAudio.value = true
+                isLoadFail.value = false
+                initAudio();
             }
             
             return response.data;
@@ -92,7 +116,7 @@
 
     function initPlayer() {
 
-        console.log('initPlayer:',filePreview);
+        console.log('initPlayer:', filePreview);
 
         player = new DPlayer({
             // container: videoContainer.value,
@@ -106,6 +130,35 @@
                 type: filePreview.attachDtlContentType,  // 视频类型，这里是 video/mp4
             },
         });
+
+    }
+
+    function initAudio() {
+
+        console.log('initAudio:', filePreview);
+        console.log('isLoadFail:', isLoadFail.value);
+
+        let url = api.defaults.baseURL + '/attachment/files/filePreview?' 
+                                + 'attachDtlID=' + filePreview.attachDtlID
+                                + '&stoneFileToken=' + filePreview.stoneFileToken
+                                ; // 视频 URL 或视频对象
+
+        console.log('audioSource', url);
+
+        // 设置音频名称
+        let attachDtlName = filePreview.attachDtlName;
+        let index = attachDtlName.lastIndexOf('.');
+        if (index > -1) {
+            audioName.value = attachDtlName.substring(0, index);
+        } else {
+            audioName.value = attachDtlName
+        }
+
+        // 设置音频源
+        audioSource.value = url;
+
+        // 播放音频
+        audioContainer.value.load();
 
     }
 
@@ -123,12 +176,20 @@
 .preview-body {
     max-height: 100vh;
     overflow: auto;
-
-}
-.dplayer.dplayer-no-danmaku.dplayer-arrow {
-    margin: 0 auto;
 }
 .file-preview-center {
     margin: 0 auto;
+}
+.audio-name {
+    margin-bottom: 20px;
+    color: white;
+}
+.audio-logo {
+    height: 200px;
+    width: 200px;
+    background-image: url("@/assets/image/filePreview/audio_logo.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
 }
 </style>

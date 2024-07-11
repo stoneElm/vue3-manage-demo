@@ -1,8 +1,8 @@
 <template>
     <el-button type="primary" @click="filePreview('video')">文件预览VIDEO</el-button>
     <el-button type="primary" @click="filePreview('pdf')">文件预览PDF</el-button>
-    <el-button type="primary" @click="filePreview('mp3')">文件预览MP3</el-button>
-    <el-button type="primary" @click="filePreview('text')">文件预览MP3</el-button>
+    <el-button type="primary" @click="filePreview('audio')">文件预览MP3</el-button>
+    <el-button type="primary" @click="filePreview('text')">文件预览Text</el-button>
 </template>
 
 <script>
@@ -41,7 +41,7 @@ export default {
                 attachDtlID = 1424062100000001;
             }
 
-            if (attachType === 'map3') {
+            if (attachType === 'audio') {
                 attachDtlID = 1424071100000001;
             }
 
