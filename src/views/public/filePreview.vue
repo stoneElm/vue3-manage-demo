@@ -2,7 +2,7 @@
     <div class="common-layout file-preview">
         <el-container class="preview-body">
             <!-- 视频 -->
-            <div ref="playerContainer" v-show="isPlayer"></div>
+            <div ref="playerContainer" class='file-preview-center' v-show="isPlayer"></div>
 
             <!-- 音频 -->
             <div v-show="isAudio" class='file-preview-center'>
@@ -10,6 +10,14 @@
                 <div class="audio-logo file-preview-center"></div>
                 <audio ref="audioContainer" autoplay controls :src="audioSource"></audio>
             </div>
+
+            <!-- pdf -->
+            <div v-if="isPdf" class="file-preview-center">
+                <vue-pdf :src="pdfUrl" :key="pdfKey"></vue-pdf>
+            </div>
+            <!-- <div v-if="isPdf" class="file-preview-center" id="pdfContainer">
+                <canvas id="pdfCanvas"></canvas>
+            </div> -->
 
             <!-- 无法获取文件 -->
             <div class="file-preview-center" v-show="isLoadFail">
@@ -25,23 +33,39 @@
     import DPlayer from 'dplayer';
     import { ElMessage } from "element-plus";
     import axios from 'axios';
+    import { VuePdf, createLoadingTask   } from 'vue3-pdfjs';
     import Hls from 'hls.js';
+
+    import VuePdfEmbed  from 'vue-pdf-embed';
+
 
     import {
         queryAttachDtlList
     } from '@/api/attachApi/attachApi'
    
+    let player;
     const playerContainer = ref(null);
-    const audioContainer = ref(null);
+    const isPlayer = ref(false);
+
     const audioSource = ref('');
     const audioName = ref('');
-    var isPlayer = ref(false);
-    var isAudio = ref(false);
-    var isLoadFail = ref(true);
+    const audioContainer = ref(null);
+    const isAudio = ref(false);
 
-    let player;
+    /* PDF */
+    const isPdf = ref(false);
+    const pdfKey = ref(1);
+    const pdfUrl = ref('');
+    let pdfDoc = null;
+    const pdfSource = ref({
+        url: pdfUrl.value,
+        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.9.359/cmaps/',
+        cMapPacked: true,
+    });
+    const totalPages = ref(0);
 
     // let filePreview = JSON.parse(sessionStorage.getItem('filePreview'))
+    const isLoadFail = ref(true);
     let filePreview = {
         attachDtlID: null,
         attachDtlContentType: null,
@@ -105,6 +129,12 @@
                 isLoadFail.value = false
                 initAudio();
             }
+
+            if (filePreview.attachDtlContentType === 'application/pdf') {
+                isPdf.value = true
+                isLoadFail.value = false
+                initPdf();
+            }
             
             return response.data;
         } catch (error) {
@@ -129,6 +159,8 @@
                                 ,   // 视频 URL 或视频对象
                 type: filePreview.attachDtlContentType,  // 视频类型，这里是 video/mp4
             },
+
+            // autoplay: true,     // 自动播放
         });
 
     }
@@ -141,7 +173,7 @@
         let url = api.defaults.baseURL + '/attachment/files/filePreview?' 
                                 + 'attachDtlID=' + filePreview.attachDtlID
                                 + '&stoneFileToken=' + filePreview.stoneFileToken
-                                ; // 视频 URL 或视频对象
+                                ; // 音频 URL
 
         console.log('audioSource', url);
 
@@ -162,6 +194,60 @@
 
     }
 
+    function initPdf() {
+        console.log('initPdf:', filePreview);
+
+        let url = api.defaults.baseURL + '/attachment/files/filePreview?' 
+                                + 'attachDtlID=' + filePreview.attachDtlID
+                                + '&stoneFileToken=' + filePreview.stoneFileToken
+                                ; // PDF URL
+
+        console.log('pdfUrl', url);
+
+        pdfUrl.value = url;
+
+        const loadingTask = createLoadingTask(url);
+        loadingTask.promise.then((pdf) => {
+            console.log('totalPages', pdf.numPages);
+            console.log('pdfDoc', pdf);
+            totalPages.value = pdf.numPages;
+            
+            // initPdfByCanvas(pdf);
+
+        });
+
+        pdfKey.value += 1;
+    }
+
+    function initPdfByCanvas(pdf) {
+        // 获取 PDF 文档的信息
+        console.log(pdf.numPages);
+
+        // 准备一个 canvas 元素用于渲染 PDF 页面
+        const canvas = document.getElementById('pdfCanvas');
+        console.log('canvas', canvas);
+        const context = canvas.getContext('2d');
+
+        // 指定要渲染的 PDF 页面编号
+        const pageNumber = 1;
+
+        // 使用 PDF.js 的 render 方法渲染页面
+        const renderPromise = pdf.getPage(pageNumber).then(function(page) {
+            // 设置 canvas 的大小等于 PDF 页面的大小
+            const viewport = page.getViewport({ scale: 1.0 });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            // 绘制 PDF 页面到 canvas 上
+            return page.render({ canvasContext: context, viewport: viewport });
+        });
+
+        // 等待渲染完成后，将 canvas 插入到 div 中
+        renderPromise.then(function() {
+            document.getElementById('pdfContainer').appendChild(canvas);
+        });
+    }
+
 </script>
 
 <style>
@@ -175,7 +261,6 @@
 }
 .preview-body {
     max-height: 100vh;
-    overflow: auto;
 }
 .file-preview-center {
     margin: 0 auto;
@@ -193,5 +278,10 @@
     background-position: center center;
     border-radius: 100px;
     margin-bottom: 20px;
+}
+@media only screen and (max-width: 768px) {
+    .preview-body {
+        min-width: 100vm;
+    }
 }
 </style>

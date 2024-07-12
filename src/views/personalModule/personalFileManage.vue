@@ -1,6 +1,7 @@
 <template>
     <el-button type="primary" @click="filePreview('video')">文件预览VIDEO</el-button>
-    <el-button type="primary" @click="filePreview('pdf')">文件预览PDF</el-button>
+    <el-button type="primary" @click="filePreview('pdf')">文件预览PDF多</el-button>
+    <el-button type="primary" @click="filePreview('pdf2')">文件预览PDF单</el-button>
     <el-button type="primary" @click="filePreview('audio')">文件预览MP3</el-button>
     <el-button type="primary" @click="filePreview('text')">文件预览Text</el-button>
 </template>
@@ -35,6 +36,10 @@ export default {
 
             if (attachType === 'pdf') {
                 attachDtlID = 1424070900000001;
+            }
+
+            if (attachType === 'pdf2') {
+                attachDtlID = 1424071200000001;
             }
 
             if (attachType === 'text') {
