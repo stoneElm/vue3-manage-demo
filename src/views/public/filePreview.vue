@@ -2,7 +2,7 @@
     <div class="common-layout file-preview">
         <el-container class="preview-body">
             <!-- 视频 -->
-            <div ref="playerContainer" class='file-preview-center' v-show="isPlayer"></div>
+            <div ref="playerContainer" class='file-preview-center' v-show="isPlayer" v-cloak></div>
 
             <!-- 音频 -->
             <div v-show="isAudio" class='file-preview-center'>
@@ -12,12 +12,16 @@
             </div>
 
             <!-- pdf -->
-            <div v-if="isPdf" class="file-preview-center">
-                <vue-pdf :src="pdfUrl" :key="pdfKey"></vue-pdf>
+            <div v-if="isPdf" class="file-preview-center" style="width: 100%;"> 
+                <div class="h-full w-full overflow-hidden rounded-lg">
+                    <iframe class="border-0"
+                        title="预览文档"
+                        :src="pdfUrl"
+                        width="100%"
+                        height="100%"
+                    ></iframe>
+                </div>
             </div>
-            <!-- <div v-if="isPdf" class="file-preview-center" id="pdfContainer">
-                <canvas id="pdfCanvas"></canvas>
-            </div> -->
 
             <!-- 无法获取文件 -->
             <div class="file-preview-center" v-show="isLoadFail">
@@ -30,23 +34,19 @@
 <script setup>
     import { ref, reactive, onMounted, onBeforeMount, onBeforeUnmount } from 'vue';
     import api from "@/api/api.js";
-    import DPlayer from 'dplayer';
     import { ElMessage } from "element-plus";
     import axios from 'axios';
-    import { VuePdf, createLoadingTask   } from 'vue3-pdfjs';
+
+    import DPlayer from 'dplayer';
     import Hls from 'hls.js';
 
-    import VuePdfEmbed  from 'vue-pdf-embed';
+    /* PDF */
 
-
-    import {
-        queryAttachDtlList
-    } from '@/api/attachApi/attachApi'
-   
     let player;
     const playerContainer = ref(null);
     const isPlayer = ref(false);
 
+    /* audio */
     const audioSource = ref('');
     const audioName = ref('');
     const audioContainer = ref(null);
@@ -54,15 +54,7 @@
 
     /* PDF */
     const isPdf = ref(false);
-    const pdfKey = ref(1);
     const pdfUrl = ref('');
-    let pdfDoc = null;
-    const pdfSource = ref({
-        url: pdfUrl.value,
-        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.9.359/cmaps/',
-        cMapPacked: true,
-    });
-    const totalPages = ref(0);
 
     // let filePreview = JSON.parse(sessionStorage.getItem('filePreview'))
     const isLoadFail = ref(true);
@@ -203,20 +195,9 @@
                                 ; // PDF URL
 
         console.log('pdfUrl', url);
-
-        pdfUrl.value = url;
-
-        const loadingTask = createLoadingTask(url);
-        loadingTask.promise.then((pdf) => {
-            console.log('totalPages', pdf.numPages);
-            console.log('pdfDoc', pdf);
-            totalPages.value = pdf.numPages;
-            
-            // initPdfByCanvas(pdf);
-
-        });
-
-        pdfKey.value += 1;
+        let encodeUrl = encodeURIComponent(url)
+        console.log('encodeUrl', url);
+        pdfUrl.value = '/pdfjs-dist/web/viewer.html?file=' + encodeUrl;
     }
 
     function initPdfByCanvas(pdf) {
@@ -254,6 +235,7 @@
 .file-preview {
     background-color: black;
     height: 100vh;
+    width: 100vm;
 
     display: flex;
     justify-content: center; /* 水平居中 */
@@ -278,6 +260,24 @@
     background-position: center center;
     border-radius: 100px;
     margin-bottom: 20px;
+}
+.border-0 {
+    border: 0px;
+}
+.h-full{
+    height: 100vh;
+} 
+.w-full {
+    width: 100vm;
+}
+.overflow-hidden {
+    overflow: hidden;
+}
+.rounded-lg{
+
+}
+[v-cloak] {
+  display: none;
 }
 @media only screen and (max-width: 768px) {
     .preview-body {
