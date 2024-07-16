@@ -798,7 +798,7 @@ const defaultOptions = {
     kind: OptionKind.VIEWER
   };
   defaultOptions.viewerCssTheme = {
-    value: 0,
+    value: 2,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   };
 }
@@ -1454,7 +1454,7 @@ class BasePreferences {
     disableStream: false,
     enableHWA: true,
     enableXfa: true,
-    viewerCssTheme: 0
+    viewerCssTheme: 2
   });
   #prefs = Object.create(null);
   #initializedPromise = null;

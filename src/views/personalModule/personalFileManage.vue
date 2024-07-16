@@ -1,8 +1,8 @@
 <template>
     <el-button type="primary" @click="filePreview('video')">文件预览VIDEO</el-button>
     <el-button type="primary" @click="filePreview('pdf')">文件预览PDF多</el-button>
-    <el-button type="primary" @click="filePreview('pdf2')">文件预览PDF单</el-button>
     <el-button type="primary" @click="filePreview('audio')">文件预览MP3</el-button>
+    <el-button type="primary" @click="filePreview('html')">文件预览HTML</el-button>
     <el-button type="primary" @click="filePreview('text')">文件预览Text</el-button>
 </template>
 
@@ -42,12 +42,16 @@ export default {
                 attachDtlID = 1424071200000001;
             }
 
-            if (attachType === 'text') {
+            if (attachType === 'html') {
                 attachDtlID = 1424062100000001;
             }
 
             if (attachType === 'audio') {
                 attachDtlID = 1424071100000001;
+            }
+
+            if (attachType === 'text') {
+                attachDtlID = 1424071600000004;
             }
 
             sessionStorage.setItem('filePreviewAttachDtlID', attachDtlID);

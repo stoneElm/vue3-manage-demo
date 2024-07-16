@@ -12,7 +12,7 @@
             </div>
 
             <!-- pdf -->
-            <div v-if="isPdf" class="file-preview-center" style="width: 100%;"> 
+            <div v-if="isPdf" class="file-preview-center"> 
                 <div class="h-full w-full overflow-hidden rounded-lg">
                     <iframe class="border-0"
                         title="预览文档"
@@ -21,6 +21,11 @@
                         height="100%"
                     ></iframe>
                 </div>
+            </div>
+
+            <!-- text -->
+            <div v-if="isText" class="file-preview-center file-preview-center-text">
+                <pre>{{ textContent }}</pre>
             </div>
 
             <!-- 无法获取文件 -->
@@ -55,6 +60,9 @@
     /* PDF */
     const isPdf = ref(false);
     const pdfUrl = ref('');
+
+    const isText = ref(false);
+    const textContent = ref('');
 
     // let filePreview = JSON.parse(sessionStorage.getItem('filePreview'))
     const isLoadFail = ref(true);
@@ -126,6 +134,12 @@
                 isPdf.value = true
                 isLoadFail.value = false
                 initPdf();
+            }
+
+            if (filePreview.attachDtlType === 'text') {
+                isText.value = true
+                isLoadFail.value = false
+                initText();
             }
             
             return response.data;
@@ -200,6 +214,25 @@
         pdfUrl.value = '/pdfjs-dist/web/viewer.html?file=' + encodeUrl;
     }
 
+    function initText() {
+        console.log('initText:', filePreview);
+
+        let url = api.defaults.baseURL + '/attachment/files/filePreview?' 
+                                + 'attachDtlID=' + filePreview.attachDtlID
+                                + '&stoneFileToken=' + filePreview.stoneFileToken
+                                ; // PDF URL
+
+        axios.get(url, {
+            responseType: 'text'
+        })
+        .then(response => {
+            textContent.value = response.data;
+        })
+        .catch(error => {
+            console.error('Error fetching file:', error);
+        });
+    }
+
     function initPdfByCanvas(pdf) {
         // 获取 PDF 文档的信息
         console.log(pdf.numPages);
@@ -246,6 +279,15 @@
 }
 .file-preview-center {
     margin: 0 auto;
+    width: 100%;
+}
+.file-preview-center-text {
+    overflow: auto;
+    padding: 0px 8px;
+    color:aliceblue
+}
+.file-preview-center-text pre {
+    text-align:left
 }
 .audio-name {
     margin-bottom: 20px;
@@ -272,9 +314,6 @@
 }
 .overflow-hidden {
     overflow: hidden;
-}
-.rounded-lg{
-
 }
 [v-cloak] {
   display: none;
