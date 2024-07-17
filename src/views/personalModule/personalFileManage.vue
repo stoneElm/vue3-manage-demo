@@ -6,9 +6,14 @@
                 <div class="attach-dtl-logo">
                 
                 </div>
-                <div class="attach-dtl-name">{{ item.attachDtlName }}</div>
+                <div :title="item.attachDtlName" class="attach-dtl-name">
+                    <el-tooltip placement="top">
+                        <template #content> {{ item.attachDtlName }} </template>
+                        {{ item.attachDtlName }}
+                    </el-tooltip>
+                </div>
             </div>
-            <div class="attach-dtl-view-none">
+            <div class="attach-dtl-view-none" v-else>
 
             </div>
         </div>
@@ -30,7 +35,7 @@
     const attachDtlList = ref([]);
     const attachDtlListList = ref([]);
     const calaWidth = ref(null);
-    const defaultWidth = ref(150);
+    const defaultWidth = ref(120);
     const storageWidth = ref(0);
 
     onMounted(() => {
@@ -123,13 +128,21 @@
 }
 .attach-dtl-view {
     flex: 1;
-    background-color: pink;
-    margin-right: 20px;
-    margin-bottom: 20px;
+    margin-right: 16px;
+    margin-bottom: 16px;
+    height: 130px;
 }
 .attach-dtl-view-show {
     cursor: pointer;
-    padding: 8px;
+    padding: 0px 8px;
+    height: calc(100% - 16px);
+    width: calc(100% - 16px);
+    background-color: pink;
+}
+.attach-dtl-logo {
+    height: 80px;
+    border: 1px solid plum;
+    margin-bottom: 3px;
 }
 .attach-dtl-view-none {
     cursor: pointer;
@@ -141,5 +154,12 @@
 }
 .attach-dtl-name {
     word-break: break-all;
+    font-size: 12px;
+
+    display: -webkit-box;               /* 开启弹性盒子布局 */
+    -webkit-box-orient: vertical;       /* 设置弹性盒子的子元素排列方向为垂直 */
+    -webkit-line-clamp: 2;              /* 设置可见的文本行数 */
+    overflow: hidden;                   /* 隐藏溢出的内容 */
+    text-overflow: ellipsis;            /* 超出容器的文本显示省略号 */
 }
 </style>
