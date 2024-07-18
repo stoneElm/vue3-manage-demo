@@ -311,6 +311,16 @@
     background-position: center center;
     border-radius: 100px;
     margin-bottom: 20px;
+    animation: rotateBackground 10s linear infinite;
+}
+/* 定义旋转动画 */
+@keyframes rotateBackground {
+    0% {
+        transform: rotate(0deg); /* 初始状态，不旋转 */
+    }
+    100% {
+        transform: rotate(360deg); /* 最终状态，旋转360度 */
+    }
 }
 .border-0 {
     border: 0px;

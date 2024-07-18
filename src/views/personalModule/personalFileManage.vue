@@ -1,5 +1,26 @@
 <template>
-    <div ref="calaWidth" style="width: 100%;"></div>
+    <div class="button-list">
+        <div class="float-left">
+            <el-button :type="primary" style="color: #409eff;">
+                <el-icon style="margin-right: 8px;"><Back /></el-icon>返回上级
+            </el-button>
+        </div>
+        <div class="float-right">
+            <el-dropdown style="color: #409eff;">
+                <el-button :type="primary" style="color: #409eff;">
+                    <el-icon style="margin-right: 8px;"><CirclePlus /></el-icon>新建
+                </el-button>
+			    <template #dropdown>
+				    <el-dropdown-menu>
+					    <el-dropdown-item @click="createFolder">新建目录</el-dropdown-item>
+					    <el-dropdown-item @click="createFile">新建文件</el-dropdown-item>
+				    </el-dropdown-menu>
+			    </template>
+		    </el-dropdown>
+        </div>
+    </div>
+
+    <div ref="calaWidth" class="width-full"></div>
     <div class="attach-dtl-list" v-for="attachDtlList in attachDtlListList">
         <div class="attach-dtl-view" v-for="item in attachDtlList" :key="item.attachDtlID">
             <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item.attachDtlID)">
@@ -17,14 +38,16 @@
 
             </div>
         </div>
-        
     </div>
-    
+
+    <file-upload></file-upload>
 </template>
 
 <script setup>
     import { ref, reactive, onMounted, onUnmounted } from 'vue';
     import { useRouter } from 'vue-router'
+
+    import fileUpload from '@/views/public/fileUpload.vue'
 
     import {
         queryAttachDtlList
@@ -35,7 +58,7 @@
     const attachDtlList = ref([]);
     const attachDtlListList = ref([]);
     const calaWidth = ref(null);
-    const defaultWidth = ref(120);
+    const defaultWidth = ref(100);
     const storageWidth = ref(0);
 
     onMounted(() => {
@@ -120,24 +143,52 @@
 
         window.open(routeData.href, '_blank');
     }
+
+    function createFolder() {
+
+    }
+
+    function createFile() {
+        
+    }
 </script>
 
 <style>
+.button-list {
+    padding-bottom: 12px;
+    height: 32px;
+}
+.width-full {
+    width: 100%;
+}
+.div-left {
+    position: relative;
+    left: 0;
+}
+.div-right {
+    position: relative;
+    right: 0;
+}
+.float-left {
+    float: left;
+}
+.float-right {
+    float: right;
+}
 .attach-dtl-list {
     display: flex;
 }
 .attach-dtl-view {
     flex: 1;
-    margin-right: 16px;
+    margin-right: 10px;
     margin-bottom: 16px;
-    height: 130px;
+    height: 110px;
 }
 .attach-dtl-view-show {
     cursor: pointer;
-    padding: 0px 8px;
-    height: calc(100% - 16px);
-    width: calc(100% - 16px);
-    background-color: pink;
+    padding: 0px 0px;
+    height: calc(100% - 0px);
+    width: calc(100% - 0px);
 }
 .attach-dtl-logo {
     height: 80px;
