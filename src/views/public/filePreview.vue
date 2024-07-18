@@ -25,7 +25,9 @@
 
             <!-- text -->
             <div v-if="isText" class="file-preview-center file-preview-center-text">
-                <pre>{{ textContent }}</pre>
+                <div class="h-full w-full overflow-hidden">
+                    <pre>{{ textContent }}</pre>
+                </div>
             </div>
 
             <!-- 无法获取文件 -->
@@ -38,6 +40,7 @@
    
 <script setup>
     import { ref, reactive, onMounted, onBeforeMount, onBeforeUnmount } from 'vue';
+    import { useRoute } from 'vue-router';
     import api from "@/api/api.js";
     import { ElMessage } from "element-plus";
     import axios from 'axios';
@@ -45,7 +48,7 @@
     import DPlayer from 'dplayer';
     import Hls from 'hls.js';
 
-    /* PDF */
+    const route = useRoute();
 
     let player;
     const playerContainer = ref(null);
@@ -78,7 +81,13 @@
     });
    
     onMounted(() => {
-        const attachDtlID = sessionStorage.getItem('filePreviewAttachDtlID');
+        let attachDtlID = sessionStorage.getItem('filePreviewAttachDtlID');
+
+        // 参数获取优先级 路径
+
+        console.log('----- 从路径获取参数信息 -----')
+        console.log('----- route -----', route.query)
+        // attachDtlID =  route.query.attachDtlID
 
         initAttachDtlData(attachDtlID);
     });
@@ -314,6 +323,9 @@
 }
 .overflow-hidden {
     overflow: hidden;
+}
+.background-color-white {
+    background-color: white;
 }
 [v-cloak] {
   display: none;
