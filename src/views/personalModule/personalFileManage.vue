@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    <file-upload></file-upload>
+    <file-upload @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
 </template>
 
 <script setup>
@@ -150,6 +150,14 @@
 
     function createFile() {
         
+    }
+
+    function fileUploadSuccess(attachDtlID) {
+        console.log('----- 上传成功 -----')
+    }
+
+    function fileUploadDelete(attachDtlID) {
+        console.log('----- 删除成功 -----')
     }
 </script>
 
