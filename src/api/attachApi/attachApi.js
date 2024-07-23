@@ -9,3 +9,10 @@ export const queryAttachDtlList = (data) =>
         url: baseURL + '/attachment/files/selectAttachDtlList',
         data
     })
+
+export const fileDownload = (data) =>
+    requert({
+        method: "POST",
+        url: baseURL + '/attachment/files/download',
+        data
+    })
