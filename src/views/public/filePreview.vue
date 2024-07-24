@@ -25,7 +25,7 @@
 
             <!-- text -->
             <div v-if="isText" class="file-preview-center file-preview-center-text">
-                <div class="h-full w-full overflow-hidden">
+                <div class="h-full w-full overflow-auto">
                     <pre>{{ textContent }}</pre>
                 </div>
             </div>
@@ -333,6 +333,9 @@
 }
 .overflow-hidden {
     overflow: hidden;
+}
+.overflow-auto {
+    overflow: auto;
 }
 .background-color-white {
     background-color: white;

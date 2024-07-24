@@ -21,7 +21,7 @@
     </div>
 
     <div ref="calaWidth" class="width-full"></div>
-    <div class="attach-dtl-list" v-for="attachDtlList in attachDtlListList">
+    <div class="attach-dtl-list" v-for="attachDtlList in attachDtlListList" :key="attachDtlList">
         <div class="attach-dtl-view" v-for="item in attachDtlList" :key="item.attachDtlID">
             <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item.attachDtlID)" @contextmenu.prevent="showContextMenu($event, item.attachDtlID)">
                 <div class="attach-dtl-logo">
@@ -249,6 +249,7 @@
         let postUrl = api.defaults.baseURL + '/attachment/files/download'
         let getUrl = api.defaults.baseURL + '/attachment/files/download/' + attachDtlID 
                 + '?stoneFileToken=' + sessionStorage.getItem('stoneFileToken');
+
         let data = {
             attachDtlID: attachDtlID
         }
@@ -260,18 +261,9 @@
             headers: headers
         }
         
-        axios.get(getUrl)
+        axios.post(postUrl, data, config)
         .then( response => {
-
-        })
-        .catch( error => {
-            ElMessage({
-                message: '文件下载失败！',
-                type: 'error',
-                duration: 3.5 * 1000
-            })
-
-            console.log(error);
+            console.log('response', response)
         })
     }
 

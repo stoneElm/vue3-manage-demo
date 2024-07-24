@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
+import { Message, MESSAGE_TYPE } from '@/utils/messageUtil';
 
 const dev = process.env.Node_ENV === 'development';
 
@@ -44,11 +45,12 @@ service.interceptors.request.use(
 // response拦截器
 service.interceptors.response.use(
     response => {
-        console.log('------------')
+        console.log('----- response -----', response)
 
         if (loding) {
             loding.close()
         }
+
         if (response.status == '200') {
             console.log('--- 结束请求接口 ---' + response.config.url)
             console.log(response)
@@ -90,7 +92,15 @@ service.interceptors.response.use(
     error => {
         console.log('error', error);
 
+        if (error.code === 'ERR_NETWORK') {
+            Message('网络连接错误！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR);
+            return error
+        }
+
         let status;
+
+        console.log('code：', code, 'status：', error.status);
+
         let message = '请求错误，请稍后重试！';
 
         if (error && error.response && error && error.response.status) {
