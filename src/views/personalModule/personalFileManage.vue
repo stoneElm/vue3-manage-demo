@@ -21,23 +21,27 @@
     </div>
 
     <div ref="calaWidth" class="width-full"></div>
-    <div class="attach-dtl-list" v-for="attachDtlList in attachDtlListList" :key="attachDtlList">
-        <div class="attach-dtl-view" v-for="item in attachDtlList" :key="item.attachDtlID">
-            <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item.attachDtlID)" @contextmenu.prevent="showContextMenu($event, item.attachDtlID)">
-                <div class="attach-dtl-logo">
-                
+    <div class="attach-dtl-main-view">
+        <div class="attach-dtl-list" v-for="attachDtlList in attachDtlListList" :key="attachDtlList">
+            <div class="attach-dtl-view" v-for="item in attachDtlList" :key="item.attachDtlID">
+                <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item.attachDtlID)" 
+                        @contextmenu.prevent="showContextMenu($event, item.attachDtlID, item.attachDtlName)">
+                    <div class="attach-dtl-logo">
+                    
+                    </div>
+                    <div :title="item.attachDtlName" class="attach-dtl-name">
+                        <el-tooltip placement="top">
+                            <template #content> {{ item.attachDtlName }} </template>
+                            {{ item.attachDtlName }}
+                        </el-tooltip>
+                    </div>
                 </div>
-                <div :title="item.attachDtlName" class="attach-dtl-name">
-                    <el-tooltip placement="top">
-                        <template #content> {{ item.attachDtlName }} </template>
-                        {{ item.attachDtlName }}
-                    </el-tooltip>
-                </div>
-            </div>
-            <div class="attach-dtl-view-none" v-else>
+                <div class="attach-dtl-view-none" v-else>
 
+                </div>
             </div>
         </div>
+        <file-upload @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
     </div>
 
     <div v-if="isVisible"
@@ -48,13 +52,12 @@
             <el-scrollbar>
                 <p v-for="item in showMenuList" :key="item" 
                         class="scrollbar-demo-item"
-                        @click="handleMenuOperateClick(item.attachDtlID, item.type)"><span>{{ item.operate }}</span>
+                        @click="handleMenuOperateClick(item.attachDtlID, item.type, item.attachDtlName)"><span>{{ item.operate }}</span>
                     <span v-if="item.type !== 'reName'">&emsp;</span>
                 </p>
             </el-scrollbar>
         </div>
 
-    <file-upload @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
 </template>
 
 <script setup>
@@ -68,7 +71,8 @@
 
     import {
         queryAttachDtlList,
-        fileDownload
+        fileDownload,
+        deleteAttachDtlByID
     } from '@/api/attachApi/attachApi'
 
     const route = useRouter();
@@ -85,11 +89,11 @@
     const menuX = ref(0);
     const menuY = ref(0);
     const allMenuList = ref([
-        {type: 'open', operate: '打开', attachDtlID: null},
-        {type: 'preview', operate: '预览', attachDtlID: null},
-        {type: 'download', operate: '下载', attachDtlID: null},
-        {type: 'reName', operate: '重命名', attachDtlID: null},
-        {type: 'delete', operate: '删除', attachDtlID: null},
+        {type: 'open', operate: '打开', attachDtlID: null, attachDtlName: null},
+        {type: 'preview', operate: '预览', attachDtlID: null, attachDtlName: null},
+        {type: 'download', operate: '下载', attachDtlID: null, attachDtlName: null},
+        {type: 'reName', operate: '重命名', attachDtlID: null, attachDtlName: null},
+        {type: 'delete', operate: '删除', attachDtlID: null, attachDtlName: null},
     ]);
     const showMenuList = ref([]);
     const rightClickMenu = ref(null);
@@ -200,7 +204,7 @@
         console.log('----- 删除成功 -----')
     }
 
-    function showContextMenu(event, attachDtlID) {
+    function showContextMenu(event, attachDtlID, attachDtlName) {
         // console.log('----- 自定义右键功能 -----', attachDtlID)
         console.log('x:', event.clientX, 'y:', event.clientY)
 
@@ -211,6 +215,7 @@
         // 获取触发右键点击事件的div元素
         allMenuList.value.forEach((value, index, array) => {
             value.attachDtlID = attachDtlID;
+            value.attachDtlName = attachDtlName;
             if (value.type !== 'open') {
                 showMenuList.value.push(value);
             }
@@ -236,34 +241,50 @@
         isVisible.value = true;
     }
 
-    function handleMenuOperateClick (attachDtlID, type) {
+    function handleMenuOperateClick (attachDtlID, type, attachDtlName) {
         console.log('----- 当前操作类型 -----', attachDtlID, type);
         if (type === 'download') {
-            handleFileDownload(attachDtlID);
+            handleFileDownload(attachDtlID, attachDtlName);
+        }
+
+        if (type === 'preview') {
+            filePreviewDblclick(attachDtlID);
+        }
+
+        if (type === 'delete') {
+            handleFileDelete(attachDtlID);
         }
     }
 
-    function handleFileDownload (attachDtlID) {
+    function handleFileDownload (attachDtlID, attachDtlName) {
         console.log('----- 文件下载 -----', attachDtlID);
 
-        let postUrl = api.defaults.baseURL + '/attachment/files/download'
-        let getUrl = api.defaults.baseURL + '/attachment/files/download/' + attachDtlID 
-                + '?stoneFileToken=' + sessionStorage.getItem('stoneFileToken');
+        let fileDownloadParam = {attachDtlID: attachDtlID};
 
-        let data = {
-            attachDtlID: attachDtlID
-        }
-        let headers = {
-            'Stone-Token': sessionStorage.getItem('stoneFileToken')
-        }
-        let config = {
-            responseType: 'blob',
-            headers: headers
-        }
-        
-        axios.post(postUrl, data, config)
-        .then( response => {
-            console.log('response', response)
+        fileDownload(fileDownloadParam).then(response => {
+            // 创建一个 Blob 对象
+            const fileBlob = new Blob([response.data], { type: response.headers['content-type'] });
+            // 创建一个 URL 对象
+            const fileURL = window.URL.createObjectURL(fileBlob);
+            // 创建一个 a 标签用于触发下载
+            const link = document.createElement('a');
+            link.style.display = 'none';
+            link.href = fileURL;
+            link.download = attachDtlName; // 设置下载文件的名称
+            document.body.appendChild(link);
+            link.click(); // 模拟点击以开始下载
+            document.body.removeChild(link); // 下载完成后移除链接
+            window.URL.revokeObjectURL(fileURL); // 释放 URL 对象
+        })
+    }
+
+    function handleFileDelete(attachDtlID) {
+        let deleteFileParam = {attachDtlID: attachDtlID};
+
+        deleteAttachDtlByID(deleteFileParam).then(res => {
+            if (res.code == '00000') {
+                console.log('删除成功了0哦')
+            }
         })
     }
 
@@ -276,8 +297,17 @@
 
 <style>
 .button-list {
+    background-color: #fff;
     padding-bottom: 12px;
     height: 32px;
+
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+.attach-dtl-main-view {
+    padding-top: 44px;
 }
 .width-full {
     width: 100%;

@@ -26,6 +26,10 @@ service.interceptors.request.use(
             config.headers['Stone-Token'] = `${token}`; 
         }
 
+        if (config.url.endsWith('/attachment/files/download')) {
+            config.responseType = 'blob';
+        }
+
         return config;
     },
     error => {
@@ -33,11 +37,7 @@ service.interceptors.request.use(
         if (loding) {
             loding.close();
         }
-        ElMessage({
-            message: '请求错误，请稍后重试！',
-            type: 'error',
-            duration: 3.5 * 1000
-        })
+        Message('请求错误，请稍后重试！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR)
         return;
     }
 )
@@ -54,6 +54,12 @@ service.interceptors.response.use(
         if (response.status == '200') {
             console.log('--- 结束请求接口 ---' + response.config.url)
             console.log(response)
+
+            // responseType 为 'blob' 时单独处理
+            if (response.request.responseType === 'blob') {
+                return response;
+            }
+
             let res = response.request.responseText;
             if (res == "") {
                 return res;

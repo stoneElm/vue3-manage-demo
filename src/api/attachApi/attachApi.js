@@ -10,6 +10,13 @@ export const queryAttachDtlList = (data) =>
         data
     })
 
+export const deleteAttachDtlByID = (data) =>
+    requert({
+        method: "POST",
+        url: baseURL + '/attachment/files/deleteAttachDtlByID',
+        data
+    })
+
 export const fileDownload = (data) =>
     requert({
         method: "POST",
