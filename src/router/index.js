@@ -79,23 +79,23 @@ const routes = [
 				]
 			},
 			{
-				path: "/personalModule",
-				name: "personalModule",
+				path: "/personalCenter",
+				name: "personalCenter",
 				meta: {
 					not_login_required: false,
-					title: '个人模块',
+					title: '个人中心',
 					icon: 'Grid'
 				},
 				children: [
 					{
-						path: "/personalFileManage",
-						name: "personalFileManage",
+						path: "/documentCenter",
+						name: "documentCenter",
 						meta: {
-							title: '文件管理',
+							title: '文档中心',
 							icon: 'House'
 						},
 						/** 在src/views 文件下创建home文件 */
-						component: () => import("@/views/personalModule/personalFileManage.vue")
+						component: () => import("@/views/personalCenter/documentCenter.vue")
 					}
 				]
 			},
@@ -140,12 +140,40 @@ const routes = [
 								component: () => import("@/views/siteSkills/storageSkills/redisSkill.vue"),
 							}
 						]
-		
-
-
 					}
 				]
+			},
+			{
+				path: "/devSupport",
+				name: "devSupport",
+				meta: {
+					not_login_required: false,
+					title: '研发支撑',
+					icon: 'Grid'
+				},
+				children: [
+					{
+						path: "/codeSupport",
+						name: "codeSupport",
+						meta: {
+							title: '代码支撑',
+							icon: 'House'
+						},
 
+						children: [
+							{
+								path: "/produceCURD",
+								name: "produceCURD",
+								meta: {
+									title: 'CURD生成',
+									icon: 'House'
+								},
+								/** 在src/views 文件下创建home文件 */
+								component: () => import("@/views/devSupport/codeSupport/produceCURD.vue"),
+							}
+						]
+					}
+				]
 			}
 		]
 	}

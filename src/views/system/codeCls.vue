@@ -739,6 +739,7 @@ export default {
         padding: 30px;
     }
     .el-table .success-row {
-        --el-table-tr-bg-color: var(--el-color-success-light-9);
+        /* --el-table-tr-bg-color: var(--el-color-success-light-9); */
+        --el-table-tr-bg-color: #ecf5ff;
     }
 </style>

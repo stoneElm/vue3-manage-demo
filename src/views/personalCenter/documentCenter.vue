@@ -1,11 +1,11 @@
 <template>
     <div class="button-list">
-        <div class="float-left">
+        <div class="div-left">
             <el-button  style="color: #409eff;">
                 <el-icon style="margin-right: 3px;"><Back /></el-icon>返回上级
             </el-button>
         </div>
-        <div class="float-right">
+        <div class="div-right">
             <el-dropdown style="color: #409eff;">
                 <el-button  style="color: #409eff;">
                     <el-icon style="margin-right: 3px;"><CirclePlus /></el-icon>新建
@@ -313,11 +313,11 @@
     width: 100%;
 }
 .div-left {
-    position: relative;
+    position: absolute;
     left: 0;
 }
 .div-right {
-    position: relative;
+    position: absolute;
     right: 0;
 }
 .float-left {
