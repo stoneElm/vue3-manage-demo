@@ -25,48 +25,54 @@
 	</div>
 </template>
 
-<script>
-import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
-import {
-    logout
-} from '@/api/userApi/userLoginApi'
-export default {
-	data() {
-		return {
-			
-		}
-	},
+<script setup>
+	import { ref, onMounted, onUnmounted } from 'vue';
+	import { useRouter } from 'vue-router'
+	import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
+	import {
+    	logout
+	} from '@/api/userApi/userLoginApi'
 
-	methods: {
-		exit() {
-			ElMessageBox.confirm(
-    			'退出登陆后再次访问页面需重新输入用户凭证信息!',
-    			'确定退出？',
-    			{
-      				confirmButtonText: '确认',
-      				cancelButtonText: '取消',
-      				type: 'warning',
-      				draggable: true,
-    			}
-  			)		
-    		.then(() => {
-      			console.log("确定退出")
-				  logout({}).then(res => {
-                	if (res.code == '00000') {
-                    	console.log('--- 发起退出登录请求出参 ---', res)
-						sessionStorage.removeItem('Stone-Token');
-						sessionStorage.removeItem('stoneFileToken');
-                   		this.$router.push('/login');
-                	}
-            	})
+	const route = useRouter();
 
-    		})
-    		.catch(() => {
+	const circleUrl = ref(null);
+
+	onMounted(() => {
+		
+    });
+
+    onUnmounted(() => {
+        
+    });
+
+	function exit() {
+		ElMessageBox.confirm(
+    		'退出登陆后再次访问页面需重新输入用户凭证信息!',
+    		'确定退出？',
+    		{
+      			confirmButtonText: '确认',
+      			cancelButtonText: '取消',
+      			type: 'warning',
+      			draggable: true,
+    		}
+  		)		
+    	.then(() => {
+      		console.log("确定退出")
+			logout({}).then(res => {
+            	if (res.code == '00000') {
+                	console.log('--- 发起退出登录请求出参 ---', res)
+					sessionStorage.removeItem('Stone-Token');
+					sessionStorage.removeItem('stoneFileToken');
+                	route.push('/login');
+            	}
+        	})
+
+    	})
+    	.catch(() => {
 				
-			})
-		}
+		})
 	}
-}
+
 </script>
 
 <style>

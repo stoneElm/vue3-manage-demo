@@ -43,6 +43,7 @@ export default {
     .aside{
 		height: calc(100vh - 64px - 0px);
 		background-color: #545c64;
+        position: relative;
 	}
 	.header{
         height: 64px;
@@ -57,10 +58,10 @@ export default {
         padding: 20px;
         height: calc(100vh - 64px - 0px - 48px);
     }
-    .el-scrollbar__bar.is-horizontal>div {
+    .el-main.main-main>.el-scrollbar>.el-scrollbar__bar.is-horizontal>div {
         height: 0px;
     }
     .el-scrollbar__bar.is-vertical>div {
         width: 0px;
-    }
+    } 
 </style>

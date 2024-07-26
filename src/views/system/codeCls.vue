@@ -35,14 +35,14 @@
             </el-col>
         </el-row>
     </el-form>
-    <el-table :data="codeClsList" :row-class-name="codeClsRowClassName" @selection-change="getCodeClsSelectionRows" @select="selectCodeCls" @row-click="codeClsTableClick" style="width: 100%; height: 240px;">
+    <el-table :data="codeClsList" :row-class-name="codeClsRowClassName" @selection-change="getCodeClsSelectionRows" @select="selectCodeCls" @row-click="codeClsTableClick" style="width: 100%; height: 240px; overflow-x: auto;">
         <el-table-column type="selection" width="40" />
-        <el-table-column prop="codeClsName" label="标准代码分类名称" />
-        <el-table-column prop="codeClsType" label="标准代码分类类型" />
-        <el-table-column prop="validFlagName" label="生效状态" />
-        <el-table-column prop="validDate" label="生效时间" />
-        <el-table-column prop="invalidDate" label="失效时间" />
-        <el-table-column fixed="right" label="操作" >
+        <el-table-column show-overflow-tooltip prop="codeClsName" label="标准代码分类名称" />
+        <el-table-column show-overflow-tooltip prop="codeClsType" label="标准代码分类类型" />
+        <el-table-column show-overflow-tooltip prop="validFlagName" label="生效状态" />
+        <el-table-column show-overflow-tooltip prop="validDate" label="生效时间" min-width="160"/>
+        <el-table-column show-overflow-tooltip prop="invalidDate" label="失效时间" min-width="160"/>
+        <el-table-column show-overflow-tooltip fixed="right" label="操作" min-width="100">
             <template #default="scope">
                 <el-button link type="primary" size="small" @click="editCodeCls(scope.$index)">
                     编辑
@@ -102,13 +102,13 @@
         </el-row>
     </el-form>
     <el-table :data="codeClsValList" @selection-change="getCodeClsValSelectionRows" style="width: 100%; height: 240px;">
-        <el-table-column type="selection" width="40" />
-        <el-table-column prop="codeClsValName" label="标准代码值名称" />
-        <el-table-column prop="codeClsVal" label="标准代码值" />
-        <el-table-column prop="validFlagName" label="生效状态" />
-        <el-table-column prop="validDate" label="生效时间" />
-        <el-table-column prop="invalidDate" label="失效时间" />
-        <el-table-column fixed="right" label="操作" >
+        <el-table-column show-overflow-tooltip type="selection" width="40" />
+        <el-table-column show-overflow-tooltip prop="codeClsValName" label="标准代码值名称" />
+        <el-table-column show-overflow-tooltip prop="codeClsVal" label="标准代码值" />
+        <el-table-column show-overflow-tooltip prop="validFlagName" label="生效状态" />
+        <el-table-column show-overflow-tooltip prop="validDate" label="生效时间" min-width="160"/>
+        <el-table-column show-overflow-tooltip prop="invalidDate" label="失效时间" min-width="160"/>
+        <el-table-column show-overflow-tooltip fixed="right" label="操作" min-width="100">
             <template #default="scope">
                 <el-button link type="primary" size="small" @click="editCodeValCls(scope.$index)">
                     编辑
