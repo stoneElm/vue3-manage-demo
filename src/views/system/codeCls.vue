@@ -3,32 +3,33 @@
     <div style="border-left:4px solid #409EFF; margin-bottom: 20px; text-align:left">
         <span style="padding-left: 15px;">标准代码分类维护</span>
     </div>
-    <el-form :inline="true" :model="codeClsQueryParam" class="demo-form-inline">
+    <el-form :model="codeClsQueryParam" class="demo-form-inline">
         <el-row :gutter="20">
-            <el-col :span="6">
+            <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                 <el-form-item label="标准代码分类名称">
                     <el-input v-model="codeClsQueryParam.codeClsName" placeholder="" clearable />
                 </el-form-item>
             </el-col>
 
-            <el-col :span="6">
+            <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                 <el-form-item label="标准代码分类类型">
                     <el-input v-model="codeClsQueryParam.codeClsType" placeholder="" clearable />
                 </el-form-item>
             </el-col>
 
-            <el-col :span="2">
+            <el-col :xs="14" :sm="16" :md="0" :lg="0" :xl="0"></el-col>
+            <el-col :xs="4" :sm="3" :md="5" :lg="9" :xl="14">
                 <el-form-item>
                     <el-button type="primary" @click="codeClsQueryButtonEvent">查询</el-button>
                 </el-form-item>
             </el-col>
 
-            <el-col :offset="7" :span="1">
+            <el-col :xs="2" :sm="2" :md="1" :lg="1" :xl="1">
                 <el-form-item style="margin-top: 14px;">
                     <el-button link type="primary" size="small" @click="createCodeCls">新增</el-button>
                 </el-form-item>
             </el-col>
-            <el-col :span="2">
+            <el-col :xs="3" :sm="2" :md="2" :lg="2" :xl="1">
                 <el-form-item style="margin-top: 14px;">
                     <el-button link type="danger" size="small" @click="deleteCodeClsEvent">批量删除</el-button>
                 </el-form-item>
@@ -71,30 +72,31 @@
     <div style="border-left:4px solid #409EFF; margin-bottom: 20px; text-align:left;">
         <span style="padding-left: 15px;">标准代码值维护</span>
     </div>
-    <el-form :inline="true" :model="codeClsValQueryParam" class="demo-form-inline">
+    <el-form :model="codeClsValQueryParam" class="demo-form-inline">
         <el-row :gutter="20">
-            <el-col :span="6">
+            <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                 <el-form-item label="标准代码值名称">
                     <el-input v-model="codeClsValQueryParam.codeClsValName" placeholder="" clearable />
                 </el-form-item>
             </el-col>
-            <el-col :span="6">
+            <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                 <el-form-item label="标准代码值">
                     <el-input v-model="codeClsValQueryParam.codeClsVal" placeholder="" clearable />
                 </el-form-item>
             </el-col>
-            <el-col :span="2">
+            <el-col :xs="14" :sm="16" :md="0" :lg="0" :xl="0"></el-col>
+            <el-col :xs="4" :sm="3" :md="5" :lg="9" :xl="14">
                 <el-form-item>
                     <el-button type="primary" @click="getCodeClsValList">查询</el-button>
                 </el-form-item>
             </el-col>
 
-            <el-col :offset="7" :span="1">
+            <el-col :xs="2" :sm="2" :md="1" :lg="1" :xl="1">
                 <el-form-item style="margin-top: 14px;">
                     <el-button link type="primary" size="small" @click="createCodeValCls">新增</el-button>
                 </el-form-item>
             </el-col>
-            <el-col :span="2">
+            <el-col :xs="3" :sm="2" :md="2" :lg="2" :xl="1">
                 <el-form-item style="margin-top: 14px;">
                     <el-button link type="danger" size="small" @click="deleteCodeClsValEvent">批量删除</el-button>
                 </el-form-item>
@@ -134,43 +136,41 @@
 
     <!-- 编辑标准代码分类信息 -->
     <el-dialog v-model="codeClsDialog" :title="codeClsDialogTitle" @closed="closedDialog('codeClsDialogRef')">
-        <el-form ref="codeClsDialogRef" :inline="false" :model="saveCodeClsParam" :rules="codeClsDialogRules" status-icon label-width="155px" class="demo-form-inline">
+        <el-form ref="codeClsDialogRef" :model="saveCodeClsParam" :rules="codeClsDialogRules" status-icon label-width="155px" class="demo-form-inline">
             <el-row :gutter="20">
-                <el-col :span="12" left>
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="标准代码分类名称" prop="codeClsName">
                         <el-input v-model="saveCodeClsParam.codeClsName" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
 
-                <el-col :span="12" left>
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="标准代码分类类型" prop="codeClsType">
                         <el-input v-model="saveCodeClsParam.codeClsType" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
-            </el-row>
-            <el-row :gutter="20">
-                <el-col :span="12">
+                
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="关联标准代码分类类型">
                         <el-input v-model="saveCodeClsParam.relaCodeClsType" disabled placeholder="" clearable />
                     </el-form-item>
                 </el-col>
 
-                <el-col :span="12">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="生效状态" prop="validFlag">
                         <el-select v-model="saveCodeClsParam.validFlag" placeholder="" clearable>
                             <el-option v-for="item in validFlagOptions" :key="item.value" :label="item.label" :value="item.value" />
                         </el-select>
                     </el-form-item>
                 </el-col>
-            </el-row>
-            <el-row :gutter="20">
-                <el-col :span="12">
+                
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="生效日期">
                         <el-date-picker v-model="saveCodeClsParam.validDate" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
 
-                <el-col :span="12">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="失效日期">
                         <el-date-picker v-model="saveCodeClsParam.invalidDate" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" placeholder="" clearable />
                     </el-form-item>
@@ -189,62 +189,58 @@
 
     <!-- 编辑标准代码值信息 -->
     <el-dialog v-model="codeClsValDialog" :title="codeClsValDialogTitle" @closed="closedDialog('codeClsValDialogRef')">
-        <el-form ref="codeClsValDialogRef" :inline="false" :model="saveCodeClsValParam" :rules="codeClsValDialogRules" status-icon label-width="155px" class="demo-form-inline">
+        <el-form ref="codeClsValDialogRef" :model="saveCodeClsValParam" :rules="codeClsValDialogRules" status-icon label-width="155px" class="demo-form-inline">
             <el-row :gutter="20">
-                <el-col :span="12" left>
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="标准代码分类值名称" prop="codeClsValName">
                         <el-input v-model="saveCodeClsValParam.codeClsValName" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
-                <el-col :span="12" left>
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="标准代码分类值" prop="codeClsVal">
                         <el-input v-model="saveCodeClsValParam.codeClsVal" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
-            </el-row>
-            <el-row :gutter="20">
-                <el-col :span="12">
+                
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="标准代码分类类型" prop="codeClsType">
                         <el-input v-model="saveCodeClsValParam.codeClsType" disabled placeholder="" clearable />
                     </el-form-item>
                 </el-col>
 
-                <el-col :span="12">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="生效状态" prop="validFlag">
                         <el-select v-model="saveCodeClsValParam.validFlag" placeholder="" clearable>
                             <el-option v-for="item in validFlagOptions" :key="item.value" :label="item.label" :value="item.value" />
                         </el-select>
                     </el-form-item>
                 </el-col>
-            </el-row>
-            <el-row :gutter="20">
-                <el-col :span="12">
+                
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="生效日期">
                         <el-date-picker v-model="saveCodeClsValParam.validDate" type="datetime" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
 
-                <el-col :span="12">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="失效日期">
                         <el-date-picker v-model="saveCodeClsValParam.invalidDate" type="datetime" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
-            </el-row>
-            <el-row :gutter="20">
-                <el-col :span="12">
+                
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="代码分类别称">
                         <el-input v-model="saveCodeClsValParam.codeClsCategName" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
 
-                <el-col :span="12">
+                <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="8" left>
                     <el-form-item label="排序序号">
                         <el-input v-model="saveCodeClsValParam.serialNumber" placeholder="" clearable />
                     </el-form-item>
                 </el-col>
-            </el-row>
-            <el-row :gutter="20">
-                <el-col :span="24">
+                
+                <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" left>
                     <el-form-item label="关于代码值的描述">
                         <el-input v-model="saveCodeClsValParam.codeValDesc" type="textarea" />
                     </el-form-item>

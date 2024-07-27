@@ -345,6 +345,7 @@
     height: 80px;
     border: 1px solid plum;
     margin-bottom: 3px;
+    box-sizing: border-box;
 }
 .attach-dtl-view-none {
     cursor: pointer;
@@ -352,7 +353,7 @@
 }
 .attach-dtl-view:nth-child(odd):last-child,
 .attach-dtl-view:nth-child(even):last-child {
- margin-right: 0; 
+ margin-right: 1px; 
 }
 .attach-dtl-name {
     word-break: break-all;
