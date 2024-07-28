@@ -7,7 +7,7 @@
             <el-row :gutter="queryGutter">
                 <el-col class="text-left" :xs="16" :sm="12" :md="8" :lg="6" :xl="4">
                     <el-form-item label="数据表名称">
-                        <el-input v-model="tableQueryParam.tableName" placeholder="" @keyup.enter="handleSelectTableList" clearable />
+                        <el-input v-model="tableQueryParam.likeTableName" placeholder="" @keyup.enter="handleSelectTableList" clearable />
                     </el-form-item>
                 </el-col>
                 <el-col class="text-left" :xs="1" :sm="1" :md="1" :lg="1" :xl="1">
@@ -35,7 +35,7 @@
                                 <template #content> 名称：{{ item.tableName }}<br /> 描述：{{ item.tableComment }} </template>
                                 <div>
                                     <div class="table-name">{{ item.tableName }}</div>
-                                    <div class="table-comment">{{ item.tableComment }}</div>
+                                    <div class="table-comment" style="color: #606266;">{{ item.tableComment }}</div>
                                 </div>
                             </el-tooltip>
                         </div>
@@ -68,20 +68,23 @@
 
         <div class="code-view">
             <el-empty v-if="isCodeEmpty" :image-size="40" />
+            <pre style="margin: 0px; text-align: left" v-else>{{ codeContext }}</pre>
         </div>
     </div>
 </template>
 
 <script setup>
     import { ref, reactive, onMounted, onUnmounted } from 'vue';
+    import { Message, MESSAGE_TYPE } from '@/utils/messageUtil';
 
     import {
-        selectTableList
+        selectTableList, 
+        produceCURDCode
     } from '@/api/developApi/codeSupportApi'
 
     const tableList = ref([]);
     const tableQueryParam = ref({
-        tableName: ''
+        likeTableName: ''
     });
 
     const queryGutter = ref(20)
@@ -104,6 +107,8 @@
     const produceCodeParam = ref ({
         operationType: null
     })
+
+    const codeContext = ref('')
 
     onMounted(() => {
         handleSelectTableList();
@@ -147,8 +152,28 @@
     }
 
     function handleProduceCode () {
-        isCodeEmpty.value = true;
+        isCodeEmpty.value = false;
         console.log('----- 当前操作类型 -----', produceCodeParam.value.operationType)
+
+        if (!selectTableName.value) {
+            Message('请先选择数据表！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR)
+            return;
+        }
+
+        if (!produceCodeParam.value.operationType) {
+            Message('请选择数据表操作类型！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR)
+            return;
+        }
+
+        produceCodeParam.value.tableName = selectTableName.value
+
+        produceCURDCode(produceCodeParam.value).then(res => {
+            if (res.code == '00000') {
+                console.log('--- 查询生成代码 ---', res)
+                codeContext.value = res.data[0];
+            }
+        })
+
     }
 </script>
 

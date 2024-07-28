@@ -9,3 +9,10 @@ export const selectTableList = (data) =>
         url: baseURL + '/devSupport/codeSupport/selectTableList',
         data
     })
+
+export const produceCURDCode = (data) =>
+    requert({
+        method: "POST",
+        url: baseURL + '/devSupport/codeSupport/produceCURDCode',
+        data
+    })
