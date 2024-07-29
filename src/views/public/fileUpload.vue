@@ -42,6 +42,11 @@
 
     const route = useRoute();
 
+    const props = defineProps({
+        disabled: Boolean,
+        multiple: Boolean
+    });
+
     // 禁止上传
     const disabled = ref(false);
     // 自动上传服务器
@@ -83,7 +88,9 @@
     });
    
     onMounted(() => {
-        
+        console.log('--- multiple ---', props.multiple);
+        multiple.value = props.multiple;
+        disabled.value = props.disabled;
     });
    
     onBeforeUnmount(() => {
@@ -255,6 +262,7 @@
                 if (res.code == '00000') {
                     file.file.attachID = res.data[0].attachID;
                     file.file.attachDtlID = res.data[0].attachDtlID;
+                    file.file.attachDtlName = res.data[0].attachDtlName;
                     return response;
                 } else {
                     return myCustomPromise(false, res.message);

@@ -41,7 +41,18 @@
                 </div>
             </div>
         </div>
-        <file-upload @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
+        <el-dialog v-model="createFileDialog" title="请上传文件" @closed="closedDialog">
+            <file-upload @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
+            <template #footer>
+	            <span class="dialog-footer">
+	                <el-button @click="createFileDialog = false">取消</el-button>
+	                <el-button type="primary" @click="handleUploadFile">
+	                    保存
+	                </el-button>
+	            </span>
+	        </template>
+        </el-dialog>
+        
     </div>
 
     <div v-if="isVisible"
@@ -63,6 +74,7 @@
 <script setup>
     import { ref, reactive, onMounted, onUnmounted } from 'vue';
     import { useRouter } from 'vue-router'
+    import { Message, MESSAGE_TYPE } from '@/utils/messageUtil';
     import api from "@/api/api.js";
     import { ElMessage } from "element-plus";
     import axios from 'axios';
@@ -74,6 +86,10 @@
         fileDownload,
         deleteAttachDtlByID
     } from '@/api/attachApi/attachApi'
+
+    import {
+        selectPersonalDocList, createPersonalDocList, updatePersonalDocList, deletePersonalDocList
+    } from '@/api/personalCenterApi/personalDocApi'
 
     const route = useRouter();
 
@@ -97,7 +113,11 @@
     ]);
     const showMenuList = ref([]);
     const rightClickMenu = ref(null);
+
+    const parentDocID = ref(0);
+    const uploadAttachDtlList = ref([]);
     
+    const createFileDialog = ref(false);
 
     onMounted(() => {
         window.addEventListener('resize', handleResize);
@@ -193,15 +213,29 @@
     }
 
     function createFile() {
-        
+        uploadAttachDtlList.value = [];
+        createFileDialog.value = true;
     }
 
     function fileUploadSuccess(attachDtlID) {
         console.log('----- 上传成功 -----')
+        uploadAttachDtlList.value.push({attachDtlID: attachDtlID});
+        console.log('--- 待上传附件详情标识列表 ---', uploadAttachDtlList.value);
     }
 
     function fileUploadDelete(attachDtlID) {
         console.log('----- 删除成功 -----')
+
+        let list = [];
+
+        for (var i = 0; i < uploadAttachDtlList.value.length; i++) {
+            if (uploadAttachDtlList.value[i].attachDtlID !== attachDtlID) {
+                list.push(uploadAttachDtlList.value[i]);
+            }
+        }
+
+        uploadAttachDtlList.value = list;
+        console.log('--- 待上传附件详情标识列表 ---', uploadAttachDtlList.value);
     }
 
     function showContextMenu(event, attachDtlID, attachDtlName) {
@@ -292,6 +326,31 @@
         console.log('----- 关闭菜单 -----')
         isVisible.value = false;
         showMenuList.value = [];
+    }
+
+    function handleUploadFile() {
+        if (!(uploadAttachDtlList.value && uploadAttachDtlList.value.length > 0)) {
+            Message('请选择需要上传的文件！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR)
+            return;
+        }
+
+        let createList = [];
+
+        for (var i = 0; i < uploadAttachDtlList.value.length; i++) {
+            createList.push({
+                attachDtlID: uploadAttachDtlList.value[i].attachDtlID,
+                personalDocType: '02',
+                parentDocID: parentDocID.value
+            });
+        }
+
+        createPersonalDocList(createList).then(res => {
+            if (res.code == '00000') {
+                console.log('--- 创建个人文档列表出参 ---', res);
+                Message('上传文件成功！', MESSAGE_TYPE.MESSAGE_TYPE_SUCCESS);
+                createFileDialog = false;
+            }
+        })
     }
 </script>
 
@@ -387,5 +446,21 @@
 .attach-dtl-view-show:hover {
     background-color: #ecf5ff;
     border: 1px solid #dcdfe6;
+}
+.el-dialog {
+    width: 50% !important;
+    min-width: 350px !important;
+}
+.el-dialog__header {
+    text-align: left;
+    margin-bottom: 0px; 
+}
+.el-dialog__title {
+    display: block;
+    border-left:4px solid #409EFF; 
+    padding-left: 15px;
+}
+.el-dialog__body {
+    padding: 15px 30px 15px 30px;
 }
 </style>
