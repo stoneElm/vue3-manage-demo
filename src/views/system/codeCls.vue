@@ -722,6 +722,10 @@ export default {
 </script>
 
 <style>
+    .el-dialog {
+        width: 50% !important;
+        min-width: 350px !important;
+    }
     .el-dialog__header {
         text-align: left;
         margin-bottom: 0px; 

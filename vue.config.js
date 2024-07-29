@@ -5,6 +5,8 @@ module.exports = defineConfig({
   lintOnSave: false,   // 未使用方法编译报错
 
   devServer: {
+    port: 8080,
+
     historyApiFallback: true,
     allowedHosts: "all",      // 允许任何主机访问或者['stoneelm.cn', '.stoneelm.cn']
     client: {

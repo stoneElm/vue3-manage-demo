@@ -103,6 +103,7 @@
         {value: '05', label: '生成ServiceImpl'},
         {value: '06', label: '生成Mapper'},
         {value: '07', label: '生成MapperXml'},
+        {value: '08', label: '生成JSON入参'},
     ])
     const produceCodeParam = ref ({
         operationType: null
