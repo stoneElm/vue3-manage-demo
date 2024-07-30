@@ -24,13 +24,13 @@
     <div class="attach-dtl-main-view">
         <div class="attach-dtl-list" v-for="attachDtlList in attachDtlListList" :key="attachDtlList">
             <div class="attach-dtl-view" v-for="item in attachDtlList" :key="item.attachDtlID">
-                <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item.attachDtlID)" 
-                        @contextmenu.prevent="showContextMenu($event, item.personalDocID, item.personalDocType, item.attachDtlID, item.attachDtlName)">
+                <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item)" 
+                        @contextmenu.prevent="showContextMenu($event, item)">
                     <div class="attach-dtl-logo">
                     
                     </div>
                     <div :title="item.attachDtlName" class="attach-dtl-name">
-                        <el-tooltip placement="top">
+                        <el-tooltip placement="bottom">
                             <template #content> {{ item.personalDocName }} </template>
                             {{ item.personalDocName }}
                         </el-tooltip>
@@ -64,6 +64,18 @@
 	        <span class="dialog-footer">
 	            <el-button @click="cancelUploadFile">取消</el-button>
 	            <el-button type="primary" @click="handleUploadFile">
+	                保存
+	            </el-button>
+	        </span>
+	    </template>
+    </el-dialog>
+
+    <el-dialog v-model="createFolderDialog" title="请输入目录名称" style="margin-top: 30vh; max-width: 750px;">
+        <el-input v-model="newFolderName" placeholder="目录名称"  clearable/>
+        <template #footer>
+	        <span class="dialog-footer">
+	            <el-button @click="createFolderDialog = false">取消</el-button>
+	            <el-button type="primary" @click="handleSaveFolder">
 	                保存
 	            </el-button>
 	        </span>
@@ -118,10 +130,12 @@
 
     const uploadFileDiv = ref(null);
     const fileUploadKey = ref(0);
-    const parentDocID = ref(0);
+    const parentDocID = ref(1);
     const uploadAttachDtlList = ref([]);
     
     const createFileDialog = ref(false);
+    const createFolderDialog = ref(false);
+    const newFolderName = ref('');
 
     onMounted(() => {
         window.addEventListener('resize', handleResize);
@@ -201,21 +215,27 @@
 
     }
 
-    function filePreviewDblclick(attachDtlID) {
-        console.log('filePreviewDblclick:', attachDtlID);
+    function filePreviewDblclick(parentDoc) {
+        if (parentDoc.personalDocType === '02') {
+            console.log('filePreviewDblclick:', parentDoc.attachDtlID);
 
-        sessionStorage.setItem('filePreviewAttachDtlID', attachDtlID);
+            sessionStorage.setItem('filePreviewAttachDtlID', parentDoc.attachDtlID);
 
-        // let filePreview = {};
-        // let routeData = route.resolve({ path: '/filePreview', query: filePreview });
+            // let filePreview = {};
+            // let routeData = route.resolve({ path: '/filePreview', query: filePreview });
 
-        let routeData = route.resolve({ path: '/filePreview'});
+            let routeData = route.resolve({ path: '/filePreview'});
 
-        window.open(routeData.href, '_blank');
+            window.open(routeData.href, '_blank');
+        }
+        
+        if (parentDoc.personalDocType === '01') {
+            handleOpenFolder(parentDoc.personalDocID);
+        }
     }
 
     function createFolder() {
-
+        createFolderDialog.value = true;
     }
 
     function createFile() {
@@ -247,21 +267,27 @@
         console.log('--- 待上传附件详情标识列表 ---', uploadAttachDtlList.value);
     }
 
-    function showContextMenu(event, personalDocID, personalDocType, attachDtlID, attachDtlName) {
-        // console.log('----- 自定义右键功能 -----', attachDtlID)
+    function showContextMenu(event, personalDoc) {
+        console.log('----- 自定义右键功能 -----', personalDoc)
         console.log('x:', event.clientX, 'y:', event.clientY)
 
         event.preventDefault();
 
         showMenuList.value = [];
 
+        const folderOperateList = ['open', 'reName', 'delete'];
+        const fileOperateList = ['preview', 'download', 'reName', 'delete'];
+
         // 获取触发右键点击事件的div元素
         allMenuList.value.forEach((value, index, array) => {
-            value.personalDocID = personalDocID;
-            value.personalDocType = personalDocType;
-            value.attachDtlID = attachDtlID;
-            value.attachDtlName = attachDtlName;
-            if (value.type !== 'open') {
+            value.personalDocID = personalDoc.personalDocID;
+            value.personalDocType = personalDoc.personalDocType;
+            value.attachDtlID = personalDoc.attachDtlID;
+            value.attachDtlName = personalDoc.personalDocName;
+            if (value.personalDocType === '01' && folderOperateList.includes(value.type)) {
+                showMenuList.value.push(value);
+            }
+            if (value.personalDocType === '02' && fileOperateList.includes(value.type)) {
                 showMenuList.value.push(value);
             }
         });
@@ -290,13 +316,17 @@
         console.log('----- 当前操作对象 -----', operateObj);
 
         let type = operateObj.type;
+
+        if (type === 'open') {
+            handleOpenFolder(operateObj.personalDocID);
+        }
         
         if (type === 'download') {
             handleFileDownload(operateObj.attachDtlID, operateObj.attachDtlName);
         }
 
         if (type === 'preview') {
-            filePreviewDblclick(operateObj.attachDtlID);
+            filePreviewDblclick(operateObj);
         }
 
         if (type === 'delete') {
@@ -386,12 +416,42 @@
             }
         })
     }
+
+    function handleSaveFolder() {
+        if (!newFolderName.value) {
+            Message('请输入目录名称！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR);
+            return
+        }
+
+        let createList = [{
+            personalDocType: '01',
+            personalDocName: newFolderName.value,
+            parentDocID: parentDocID.value
+        }]
+
+        createPersonalDocList(createList).then(res => {
+            if (res.code == '00000') {
+                console.log('--- 创建个人文档列表出参 ---', res);
+                createFolderDialog.value = false;
+                Message('创建目录成功！', MESSAGE_TYPE.MESSAGE_TYPE_SUCCESS);
+
+                initAttachDtlList();
+            }
+        })
+    }
+
+    function handleOpenFolder (personalDocID) {
+        parentDocID.value = personalDocID;
+        initAttachDtlList();
+    }
 </script>
 
 <style>
 .button-list {
     background-color: #fff;
     padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #a0cfff;
     height: 32px;
 
     width: 100%;
@@ -400,7 +460,7 @@
     left: 0px;
 }
 .attach-dtl-main-view {
-    padding-top: 44px;
+    padding-top: 56px;
 }
 .width-full {
     width: 100%;
