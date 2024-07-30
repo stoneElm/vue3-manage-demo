@@ -47,6 +47,8 @@
         multiple: Boolean
     });
 
+    const fileUpload = ref(null)
+
     // 禁止上传
     const disabled = ref(false);
     // 自动上传服务器
@@ -300,7 +302,13 @@
         }
     });
 
+    function reset() {
+        fileUpload.value.clearFiles();
+    }
 
+    defineExpose({
+        reset
+    });
 }
 
     

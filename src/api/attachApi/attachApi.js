@@ -17,6 +17,13 @@ export const deleteAttachDtlByID = (data) =>
         data
     })
 
+export const deleteAttachDtlList = (data) =>
+    requert({
+        method: "POST",
+        url: baseURL + '/attachment/files/deleteAttachDtlList',
+        data
+    })
+
 export const fileDownload = (data) =>
     requert({
         method: "POST",

@@ -25,14 +25,14 @@
         <div class="attach-dtl-list" v-for="attachDtlList in attachDtlListList" :key="attachDtlList">
             <div class="attach-dtl-view" v-for="item in attachDtlList" :key="item.attachDtlID">
                 <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item.attachDtlID)" 
-                        @contextmenu.prevent="showContextMenu($event, item.attachDtlID, item.attachDtlName)">
+                        @contextmenu.prevent="showContextMenu($event, item.personalDocID, item.personalDocType, item.attachDtlID, item.attachDtlName)">
                     <div class="attach-dtl-logo">
                     
                     </div>
                     <div :title="item.attachDtlName" class="attach-dtl-name">
                         <el-tooltip placement="top">
-                            <template #content> {{ item.attachDtlName }} </template>
-                            {{ item.attachDtlName }}
+                            <template #content> {{ item.personalDocName }} </template>
+                            {{ item.personalDocName }}
                         </el-tooltip>
                     </div>
                 </div>
@@ -41,33 +41,34 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="createFileDialog" title="请上传文件" @closed="closedDialog">
-            <file-upload @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
-            <template #footer>
-	            <span class="dialog-footer">
-	                <el-button @click="createFileDialog = false">取消</el-button>
-	                <el-button type="primary" @click="handleUploadFile">
-	                    保存
-	                </el-button>
-	            </span>
-	        </template>
-        </el-dialog>
         
     </div>
 
     <div v-if="isVisible"
-                ref="rightClickMenu"
-                class="context-menu"
-                :style="{ left: `${menuX}px`, top: `${menuY}px` }">
-            <!-- 菜单项 -->
-            <el-scrollbar>
-                <p v-for="item in showMenuList" :key="item" 
-                        class="scrollbar-demo-item"
-                        @click="handleMenuOperateClick(item.attachDtlID, item.type, item.attachDtlName)"><span>{{ item.operate }}</span>
-                    <span v-if="item.type !== 'reName'">&emsp;</span>
-                </p>
-            </el-scrollbar>
-        </div>
+            ref="rightClickMenu"
+            class="context-menu"
+            :style="{ left: `${menuX}px`, top: `${menuY}px` }">
+        <!-- 菜单项 -->
+        <el-scrollbar>
+            <p v-for="item in showMenuList" :key="item" 
+                    class="scrollbar-demo-item"
+                    @click="handleMenuOperateClick(item)"><span>{{ item.operate }}</span>
+                <span v-if="item.type !== 'reName'">&emsp;</span>
+            </p>
+        </el-scrollbar>
+    </div>
+
+    <el-dialog v-model="createFileDialog" title="请上传文件" :show-close="false">
+        <file-upload :key="fileUploadKey" ref="uploadFileDiv" @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
+        <template #footer>
+	        <span class="dialog-footer">
+	            <el-button @click="cancelUploadFile">取消</el-button>
+	            <el-button type="primary" @click="handleUploadFile">
+	                保存
+	            </el-button>
+	        </span>
+	    </template>
+    </el-dialog>
 
 </template>
 
@@ -84,7 +85,8 @@
     import {
         queryAttachDtlList,
         fileDownload,
-        deleteAttachDtlByID
+        deleteAttachDtlByID,
+        deleteAttachDtlList
     } from '@/api/attachApi/attachApi'
 
     import {
@@ -105,15 +107,17 @@
     const menuX = ref(0);
     const menuY = ref(0);
     const allMenuList = ref([
-        {type: 'open', operate: '打开', attachDtlID: null, attachDtlName: null},
-        {type: 'preview', operate: '预览', attachDtlID: null, attachDtlName: null},
-        {type: 'download', operate: '下载', attachDtlID: null, attachDtlName: null},
-        {type: 'reName', operate: '重命名', attachDtlID: null, attachDtlName: null},
-        {type: 'delete', operate: '删除', attachDtlID: null, attachDtlName: null},
+        {type: 'open', operate: '打开', personalDocID: null, personalDocType: null, attachDtlID: null, attachDtlName: null},
+        {type: 'preview', operate: '预览', personalDocID: null, personalDocType: null, attachDtlID: null, attachDtlName: null},
+        {type: 'download', operate: '下载', personalDocID: null, personalDocType: null,  attachDtlID: null, attachDtlName: null},
+        {type: 'reName', operate: '重命名', personalDocID: null, personalDocType: null,  attachDtlID: null, attachDtlName: null},
+        {type: 'delete', operate: '删除', personalDocID: null, personalDocType: null, attachDtlID: null, attachDtlName: null},
     ]);
     const showMenuList = ref([]);
     const rightClickMenu = ref(null);
 
+    const uploadFileDiv = ref(null);
+    const fileUploadKey = ref(0);
     const parentDocID = ref(0);
     const uploadAttachDtlList = ref([]);
     
@@ -136,11 +140,13 @@
     });
 
     function initAttachDtlList() {
-        let attachDtlQueryParam = {}
+        let attachDtlQueryParam = {
+            parentDocID: parentDocID.value
+        }
 
-        queryAttachDtlList(attachDtlQueryParam).then(res => {
+        selectPersonalDocList(attachDtlQueryParam).then(res => {
             if (res.code == '00000') {
-                console.log('--- 查询附件详情列表出参 ---', res)
+                console.log('--- 查询个人文档列表出参 ---', res)
 
                 res.data.forEach((value, index, array) => {
                     value.isShow = '02';
@@ -214,6 +220,9 @@
 
     function createFile() {
         uploadAttachDtlList.value = [];
+
+        fileUploadKey.value = fileUploadKey.value + 1;
+
         createFileDialog.value = true;
     }
 
@@ -238,7 +247,7 @@
         console.log('--- 待上传附件详情标识列表 ---', uploadAttachDtlList.value);
     }
 
-    function showContextMenu(event, attachDtlID, attachDtlName) {
+    function showContextMenu(event, personalDocID, personalDocType, attachDtlID, attachDtlName) {
         // console.log('----- 自定义右键功能 -----', attachDtlID)
         console.log('x:', event.clientX, 'y:', event.clientY)
 
@@ -248,6 +257,8 @@
 
         // 获取触发右键点击事件的div元素
         allMenuList.value.forEach((value, index, array) => {
+            value.personalDocID = personalDocID;
+            value.personalDocType = personalDocType;
             value.attachDtlID = attachDtlID;
             value.attachDtlName = attachDtlName;
             if (value.type !== 'open') {
@@ -275,18 +286,21 @@
         isVisible.value = true;
     }
 
-    function handleMenuOperateClick (attachDtlID, type, attachDtlName) {
-        console.log('----- 当前操作类型 -----', attachDtlID, type);
+    function handleMenuOperateClick (operateObj) {
+        console.log('----- 当前操作对象 -----', operateObj);
+
+        let type = operateObj.type;
+        
         if (type === 'download') {
-            handleFileDownload(attachDtlID, attachDtlName);
+            handleFileDownload(operateObj.attachDtlID, operateObj.attachDtlName);
         }
 
         if (type === 'preview') {
-            filePreviewDblclick(attachDtlID);
+            filePreviewDblclick(operateObj.attachDtlID);
         }
 
         if (type === 'delete') {
-            handleFileDelete(attachDtlID);
+            handleFileDelete(operateObj.personalDocID);
         }
     }
 
@@ -312,12 +326,14 @@
         })
     }
 
-    function handleFileDelete(attachDtlID) {
-        let deleteFileParam = {attachDtlID: attachDtlID};
+    function handleFileDelete(personalDocID) {
+        let deleteFileParam = [{personalDocID: personalDocID}];
 
-        deleteAttachDtlByID(deleteFileParam).then(res => {
+        deletePersonalDocList(deleteFileParam).then(res => {
             if (res.code == '00000') {
-                console.log('删除成功了0哦')
+                console.log('删除成功了哦')
+
+                initAttachDtlList();
             }
         })
     }
@@ -326,6 +342,22 @@
         console.log('----- 关闭菜单 -----')
         isVisible.value = false;
         showMenuList.value = [];
+    }
+
+    function cancelUploadFile () {
+        createFileDialog.value = false;
+
+        let param = uploadAttachDtlList.value
+
+        if (!(param && param.length > 0)) {
+            return;
+        }
+
+        deleteAttachDtlList(param).then(res => {
+            if (res.code == '00000') {
+                console.log('--- 删除成功了哦： ---', param.attachDtlID);
+            }
+        })
     }
 
     function handleUploadFile() {
@@ -347,8 +379,10 @@
         createPersonalDocList(createList).then(res => {
             if (res.code == '00000') {
                 console.log('--- 创建个人文档列表出参 ---', res);
+                createFileDialog.value = false;
                 Message('上传文件成功！', MESSAGE_TYPE.MESSAGE_TYPE_SUCCESS);
-                createFileDialog = false;
+
+                initAttachDtlList();
             }
         })
     }
