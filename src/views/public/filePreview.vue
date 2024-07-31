@@ -23,6 +23,20 @@
                 </div>
             </div>
 
+            <div v-if="isImage" class="file-preview-center"> 
+                <div class="demo-image__preview" style="max-height: 100vh;">
+                    <el-image
+                            :src="imageUrl"
+                            :zoom-rate="1.2"
+                            :max-scale="7"
+                            :min-scale="0.2"
+                            :preview-src-list="imageUrlList"
+                            :initial-index="0"
+                            fit="contain"
+                    />
+                </div>
+            </div>
+
             <!-- text -->
             <div v-if="isText" class="file-preview-center file-preview-center-text">
                 <div class="h-full w-full overflow-auto">
@@ -60,10 +74,16 @@
     const audioContainer = ref(null);
     const isAudio = ref(false);
 
+    /* image */
+    const isImage = ref(false);
+    const imageUrl = ref('');
+    const imageUrlList = ref([]);
+
     /* PDF */
     const isPdf = ref(false);
     const pdfUrl = ref('');
 
+    /* text */
     const isText = ref(false);
     const textContent = ref('');
 
@@ -145,6 +165,12 @@
                 initPdf();
             }
 
+            if (filePreview.attachDtlType === 'image') {
+                isImage.value = true
+                isLoadFail.value = false
+                initImage();
+            }
+
             if (filePreview.attachDtlType === 'text') {
                 isText.value = true
                 isLoadFail.value = false
@@ -221,6 +247,18 @@
         let encodeUrl = encodeURIComponent(url)
         console.log('encodeUrl', url);
         pdfUrl.value = '/pdfjs-dist/web/viewer.html?file=' + encodeUrl;
+    }
+
+    function initImage () {
+        console.log('initImage:', filePreview);
+
+        let url = api.defaults.baseURL + '/attachment/files/filePreview?' 
+                                + 'attachDtlID=' + filePreview.attachDtlID
+                                + '&stoneFileToken=' + filePreview.stoneFileToken
+                                ; // image URL
+
+        imageUrl.value = url;
+        imageUrlList.value = [imageUrl.value];
     }
 
     function initText() {

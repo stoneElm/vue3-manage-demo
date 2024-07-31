@@ -1,7 +1,7 @@
 <template>
     <div class="button-list">
         <div class="div-left">
-            <el-button  style="color: #409eff;">
+            <el-button @click="handleReturnParent" :disabled="parentDocID === 1" style="color: #409eff;">
                 <el-icon style="margin-right: 3px;"><Back /></el-icon>返回上级
             </el-button>
         </div>
@@ -27,7 +27,11 @@
                 <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item)" 
                         @contextmenu.prevent="showContextMenu($event, item)">
                     <div class="attach-dtl-logo">
-                    
+                        <Folder v-if="item.icon === 'folder'"/>
+                        <VideoPlay v-if="item.icon === 'video'"/>
+                        <Headset v-if="item.icon === 'audio'"/>
+                        <Picture v-if="item.icon === 'image'"></Picture>
+                        <Document v-if="item.icon === 'document'"/>
                     </div>
                     <div :title="item.attachDtlName" class="attach-dtl-name">
                         <el-tooltip placement="bottom">
@@ -59,7 +63,7 @@
     </div>
 
     <el-dialog v-model="createFileDialog" title="请上传文件" :show-close="false">
-        <file-upload :key="fileUploadKey" ref="uploadFileDiv" @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
+        <file-upload :multiple="true" :key="fileUploadKey" ref="uploadFileDiv" @upload-success="fileUploadSuccess" @upload-delete="fileUploadDelete"></file-upload>
         <template #footer>
 	        <span class="dialog-footer">
 	            <el-button @click="cancelUploadFile">取消</el-button>
@@ -110,7 +114,7 @@
     const attachDtlList = ref([]);
     const attachDtlListList = ref([]);
     const calaWidth = ref(null);
-    const defaultWidth = ref(100);
+    const defaultWidth = ref(90);
     const storageWidth = ref(0);
 
     const isVisible = ref(0);
@@ -164,6 +168,21 @@
 
                 res.data.forEach((value, index, array) => {
                     value.isShow = '02';
+                    value.activityFlag = false
+
+                    if (value.personalDocType === '01') {
+                        value.icon = 'folder'
+                    } else if (value.attachDtlType === 'video') {
+                        value.icon = 'video'
+                    } else if (value.attachDtlType === 'audio') {
+                        value.icon = 'audio'
+                    } else if (value.attachDtlType === 'image') {
+                        value.icon = 'image'
+                    }
+                    
+                    else {
+                        value.icon = 'document'
+                    }
                 });
 
                 attachDtlList.value = res.data
@@ -235,6 +254,7 @@
     }
 
     function createFolder() {
+        newFolderName.value = '';
         createFolderDialog.value = true;
     }
 
@@ -268,7 +288,15 @@
     }
 
     function showContextMenu(event, personalDoc) {
-        console.log('----- 自定义右键功能 -----', personalDoc)
+
+        // 为点击的class添加活动属性
+        let selecttor = document.querySelectorAll('.attach-dtl-view');
+        for (var i = 0; i < selecttor.length; i++) {
+            selecttor[i].classList.remove('active');
+        }
+        event.target.closest('.attach-dtl-view').classList.add('active');
+
+        console.log('----- 自定义右键功能 -----', event.target)
         console.log('x:', event.clientX, 'y:', event.clientY)
 
         event.preventDefault();
@@ -370,6 +398,12 @@
 
     function hideContextMenu() {
         console.log('----- 关闭菜单 -----')
+
+        let selecttor = document.querySelectorAll('.attach-dtl-view');
+        for (var i = 0; i < selecttor.length; i++) {
+            selecttor[i].classList.remove('active');
+        }
+
         isVisible.value = false;
         showMenuList.value = [];
     }
@@ -444,6 +478,22 @@
         parentDocID.value = personalDocID;
         initAttachDtlList();
     }
+
+    function handleReturnParent () {
+        if (parentDocID.value === 1) {
+            return;
+        }
+
+        selectPersonalDocList({personalDocID: parentDocID.value}).then(res => {
+            if (res.code == '00000') {
+                console.log('--- 查询父级信息出参 ---', res);
+                
+                parentDocID.value = res.data[0].parentDocID
+
+                initAttachDtlList();
+            }
+        })
+    }
 </script>
 
 <style>
@@ -486,7 +536,8 @@
     flex: 1;
     margin-right: 10px;
     margin-bottom: 16px;
-    height: 110px;
+    height: 85px;
+    box-sizing: border-box;
 }
 .attach-dtl-view-show {
     cursor: pointer;
@@ -495,10 +546,16 @@
     width: calc(100% - 0px);
 }
 .attach-dtl-logo {
-    height: 80px;
-    border: 1px solid plum;
+    height: 55px;
+    /* border: 1px solid plum; */
     margin-bottom: 3px;
     box-sizing: border-box;
+    color: #a8abb2;
+    padding-bottom: 8px;
+}
+.attach-dtl-logo svg {
+    max-width: 55px;
+    max-height: 55px;
 }
 .attach-dtl-view-none {
     cursor: pointer;
@@ -510,7 +567,7 @@
 }
 .attach-dtl-name {
     word-break: break-all;
-    font-size: 12px;
+    font-size: 13px;
 
     display: -webkit-box;               /* 开启弹性盒子布局 */
     -webkit-box-orient: vertical;       /* 设置弹性盒子的子元素排列方向为垂直 */
@@ -539,6 +596,10 @@
 }
 .attach-dtl-view-show:hover {
     background-color: #ecf5ff;
+    border: 1px solid #dcdfe6;
+}
+.attach-dtl-view.active {
+    background-color: #d9ecff;
     border: 1px solid #dcdfe6;
 }
 .el-dialog {
