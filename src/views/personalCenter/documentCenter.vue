@@ -75,6 +75,9 @@
     </el-dialog>
 
     <el-dialog v-model="createFolderDialog" title="请输入目录名称" style="margin-top: 30vh; max-width: 750px;">
+        <div v-if="updateNameFlag" style="border-left:4px solid #409EFF; margin-bottom: 20px; text-align:left; font-size: 15px;">
+            <span style="padding-left: 15px;">{{ updateDocTypeName }}：</span><span style="color: #409EFF;">{{ oldFolderName }}</span><span>；将名称更改为</span>
+        </div>
         <el-input v-model="newFolderName" placeholder="目录名称"  clearable/>
         <template #footer>
 	        <span class="dialog-footer">
@@ -140,6 +143,10 @@
     const createFileDialog = ref(false);
     const createFolderDialog = ref(false);
     const newFolderName = ref('');
+    const oldFolderName = ref('');
+    const updateNameFlag = ref(false);
+    const updateDocID = ref(null);
+    const updateDocTypeName = ref('');
 
     onMounted(() => {
         window.addEventListener('resize', handleResize);
@@ -153,7 +160,7 @@
     onUnmounted(() => {
         window.removeEventListener('resize', handleResize);
 
-        window.removeEventListener('contextmenu', showContextMenu);
+        // window.removeEventListener('contextmenu', showContextMenu);
         window.removeEventListener('click', hideContextMenu);
     });
 
@@ -255,6 +262,7 @@
 
     function createFolder() {
         newFolderName.value = '';
+        updateNameFlag.value = false;
         createFolderDialog.value = true;
     }
 
@@ -360,6 +368,10 @@
         if (type === 'delete') {
             handleFileDelete(operateObj.personalDocID);
         }
+
+        if (type === 'reName') {
+            handleReName(operateObj);
+        }
     }
 
     function handleFileDownload (attachDtlID, attachDtlName) {
@@ -451,27 +463,54 @@
         })
     }
 
+    function handleReName(operateObj) {
+        updateNameFlag.value = true;
+        newFolderName.value = '';
+        updateDocID.value = operateObj.personalDocID
+        oldFolderName.value = operateObj.personalDocName || operateObj.attachDtlName;
+        updateDocTypeName.value = operateObj.personalDocType === '01'? '目录': '文件';
+        createFolderDialog.value = true;
+    }
+
     function handleSaveFolder() {
         if (!newFolderName.value) {
             Message('请输入目录名称！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR);
             return
         }
 
-        let createList = [{
-            personalDocType: '01',
-            personalDocName: newFolderName.value,
-            parentDocID: parentDocID.value
-        }]
+        if (updateNameFlag.value) {
+            let updateList = [{
+                personalDocID: updateDocID.value,
+                personalDocName: newFolderName.value
+            }]
 
-        createPersonalDocList(createList).then(res => {
-            if (res.code == '00000') {
-                console.log('--- 创建个人文档列表出参 ---', res);
-                createFolderDialog.value = false;
-                Message('创建目录成功！', MESSAGE_TYPE.MESSAGE_TYPE_SUCCESS);
+            updatePersonalDocList(updateList).then(res => {
+                if (res.code == '00000') {
+                    console.log('--- 修改个人文档列表出参 ---', res);
+                    createFolderDialog.value = false;
+                    Message('修改' + updateDocTypeName.value + '名称成功！', MESSAGE_TYPE.MESSAGE_TYPE_SUCCESS);
 
-                initAttachDtlList();
-            }
-        })
+                    initAttachDtlList();
+                }
+            })
+        } else {
+            let createList = [{
+                parentDocID: null,
+                personalDocType: '01',
+                personalDocName: newFolderName.value,
+                parentDocID: parentDocID.value
+            }]
+
+            createPersonalDocList(createList).then(res => {
+                if (res.code == '00000') {
+                    console.log('--- 创建个人文档列表出参 ---', res);
+                    createFolderDialog.value = false;
+                    Message('创建目录成功！', MESSAGE_TYPE.MESSAGE_TYPE_SUCCESS);
+
+                    initAttachDtlList();
+                }
+            })
+        }
     }
 
     function handleOpenFolder (personalDocID) {

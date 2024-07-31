@@ -1,5 +1,5 @@
 <template>
-    <div class="common-layout file-preview">
+    <div class="common-layout file-preview" ref="calcDiv">
         <el-container class="preview-body">
             <!-- 视频 -->
             <div ref="playerContainer" class='file-preview-center' v-show="isPlayer" v-cloak></div>
@@ -13,7 +13,7 @@
 
             <!-- pdf -->
             <div v-if="isPdf" class="file-preview-center"> 
-                <div class="h-full w-full overflow-hidden rounded-lg">
+                <div class="h-full w-full overflow-hidden">
                     <iframe class="border-0"
                         title="预览文档"
                         :src="pdfUrl"
@@ -24,8 +24,8 @@
             </div>
 
             <div v-if="isImage" class="file-preview-center"> 
-                <div class="demo-image__preview" style="max-height: 100vh;">
-                    <el-image
+                <div class="demo-el-image-viewer__canvas h-full w-full overflow-hidden">
+                    <el-image ref="imageRef" :style="{ width: `${imageWidth}px`, height: `${imageHight}px` }"
                             :src="imageUrl"
                             :zoom-rate="1.2"
                             :max-scale="7"
@@ -64,6 +64,8 @@
 
     const route = useRoute();
 
+    const calcDiv = ref(null);
+
     let player;
     const playerContainer = ref(null);
     const isPlayer = ref(false);
@@ -82,6 +84,8 @@
     /* PDF */
     const isPdf = ref(false);
     const pdfUrl = ref('');
+    const imageWidth = ref(0);
+    const imageHight = ref(0);
 
     /* text */
     const isText = ref(false);
@@ -101,6 +105,11 @@
     });
    
     onMounted(() => {
+
+        imageWidth.value = window.innerWidth;
+        imageHight.value = window.innerHeight;
+        window.addEventListener('resize', handleResize);
+
         let attachDtlID = sessionStorage.getItem('filePreviewAttachDtlID');
 
         // 参数获取优先级 路径
@@ -114,6 +123,9 @@
    
     onBeforeUnmount(() => {
         console.log('----- onBeforeUnmount -----')
+
+        window.removeEventListener('resize', handleResize);
+
         if (playerContainer) {
             console.log('----- 开始销毁 -----')
             player.value.destroy();
@@ -183,6 +195,11 @@
             console.error(error);
             throw error;
         }
+    }
+
+    function handleResize () {
+        imageWidth.value = window.innerWidth;
+        imageHight.value = window.innerHeight;
     }
 
     function initPlayer() {
@@ -259,6 +276,17 @@
 
         imageUrl.value = url;
         imageUrlList.value = [imageUrl.value];
+    }
+
+    function handelImageLoad (event) {
+        // 创建一个新的Image对象
+        const image = new Image();
+        // 设置图片的src属性为当前图片的src属性
+        image.src = event.target.src;
+        // 图片加载完成后，可以获取到图片的自然宽度和高度
+        image.onload = () => {
+            console.log('Image dimensions:', image.naturalWidth, image.naturalHeight);
+        };
     }
 
     function initText() {
