@@ -4,6 +4,7 @@
             <el-button @click="handleReturnParent" :disabled="parentDocID === 1" style="color: #409eff;">
                 <el-icon style="margin-right: 3px;"><Back /></el-icon>返回上级
             </el-button>
+            <div v-if="false" class="file-path">路径</div>
         </div>
         <div class="div-right">
             <el-dropdown style="color: #409eff;">
@@ -26,6 +27,7 @@
             <div class="attach-dtl-view" v-for="item in attachDtlList" :key="item.attachDtlID">
                 <div v-if="item.isShow==='02'" class="attach-dtl-view-show" v-on:dblclick="filePreviewDblclick(item)" 
                         @contextmenu.prevent="showContextMenu($event, item)">
+                        <!-- @mousedown="startLongPress($event, item)" @mouseup="endLongPress"> -->
                     <div class="attach-dtl-logo">
                         <Folder v-if="item.icon === 'folder'"/>
                         <VideoPlay v-if="item.icon === 'video'"/>
@@ -148,13 +150,18 @@
     const updateDocID = ref(null);
     const updateDocTypeName = ref('');
 
+    // 鼠标长按属性
+    const isPressed = ref(false);
+    const longPressTime = 500; // 长按时间阈值，单位为毫秒
+    let longPressTimer = null;
+
     onMounted(() => {
         window.addEventListener('resize', handleResize);
         initAttachDtlList();
 
         // window.addEventListener('contextmenu', showContextMenu);
         window.addEventListener('click', hideContextMenu);
-
+        window.addEventListener('mousewheel', hideContextMenu);
     });
 
     onUnmounted(() => {
@@ -162,7 +169,29 @@
 
         // window.removeEventListener('contextmenu', showContextMenu);
         window.removeEventListener('click', hideContextMenu);
+        window.removeEventListener('mousewheel', hideContextMenu);
     });
+
+    function startLongPress(event, item){
+        isPressed.value = true;
+        longPressTimer = setTimeout(() => {
+            if (isPressed.value) {
+                // 长按事件的逻辑
+                showContextMenu(event, item);
+
+                isPressed.value = false;
+            }
+        }, longPressTime);
+    };
+
+    function endLongPress (event, item) {
+        console.log('--- 鼠标松开了 ---');
+
+        isPressed.value = false;
+        clearTimeout(longPressTimer);
+        
+        // window.addEventListener('click', hideContextMenu);
+    }
 
     function initAttachDtlList() {
         let attachDtlQueryParam = {
@@ -304,7 +333,7 @@
         }
         event.target.closest('.attach-dtl-view').classList.add('active');
 
-        console.log('----- 自定义右键功能 -----', event.target)
+        console.log('----- 自定义右键功能 -----')
         console.log('x:', event.clientX, 'y:', event.clientY)
 
         event.preventDefault();
@@ -409,6 +438,10 @@
     }
 
     function hideContextMenu() {
+        if (isVisible.value === false) {
+            return;
+        }
+
         console.log('----- 关闭菜单 -----')
 
         let selecttor = document.querySelectorAll('.attach-dtl-view');
@@ -547,6 +580,14 @@
     position: absolute;
     top: 0px;
     left: 0px;
+}
+.file-path {
+    display: inline-block; 
+    line-height: 32px;
+    font-size: 14px;
+    box-sizing: border-box;
+    margin-left: 20px;
+    border-bottom: 1px solid #e9e9eb;
 }
 .attach-dtl-main-view {
     padding-top: 56px;
