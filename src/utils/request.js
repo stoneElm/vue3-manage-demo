@@ -98,28 +98,24 @@ service.interceptors.response.use(
     error => {
         console.log('error', error);
 
+        console.log('code：', error.code);
+
         if (error.code === 'ERR_NETWORK') {
             Message('网络连接错误！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR);
             return error
         }
 
-        let status;
+        if (error.code === 'ERR_BAD_RESPONSE') {
+            console.log('ERR_BAD_RESPONSE--status：', error.request.status);
 
-        console.log('code：', code, 'status：', error.status);
-
-        let message = '请求错误，请稍后重试！';
-
-        if (error && error.response && error && error.response.status) {
-            status = error.response.status
+            if (error && error.request && error.request.status && error.request.status === 500) {
+                Message('请求错误，请稍后重试！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR);
+                return error
+            }
         }
 
-        if (status === 403) {
-            message = "登陆过期";
-            ElMessage({
-                message: message,
-                type: 'error',
-                duration: 3.5 * 1000
-            })
+        if (error && error.request && error.request.status && error.request.status === 403) {
+            Message('登录过期！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR);
 
             sessionStorage.removeItem('Stone-Token');
 			sessionStorage.removeItem('stoneFileToken');
@@ -128,16 +124,7 @@ service.interceptors.response.use(
             return
         }
 
-        if (status === 500) {
-            ElMessage({
-                message: message,
-                type: 'error',
-                duration: 3.5 * 1000
-            })
-            return
-        }
-
-        return;
+        return error;
     }
 )
 
