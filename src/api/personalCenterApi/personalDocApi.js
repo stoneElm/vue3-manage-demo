@@ -30,3 +30,9 @@ export const deletePersonalDocList = (data) =>
         url: baseURL + '/personalCenter/personalDoc/deletePersonalDocList',
         data
     })
+export const selectPersonalDocPath = (data) =>
+    requert({
+        method: "POST",
+        url: baseURL + '/personalCenter/personalDoc/selectPersonalDocPath',
+        data
+    })

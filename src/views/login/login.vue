@@ -163,6 +163,7 @@ export default {
                     console.log('--- 发起登录请求出参 ---', res)
                     sessionStorage.setItem('Stone-Token', res.data.token);
                     sessionStorage.setItem('stoneFileToken', res.data.fileToken);
+                    sessionStorage.setItem('userInfo', JSON.stringify(res.data.userInfo));
                     this.$router.push('/');
                 }
             })
