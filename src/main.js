@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import { createPinia } from 'pinia'
 
 // 引入ElementPlus组件
 import ElementPlus from 'element-plus'
@@ -13,6 +14,10 @@ import router from "./router/index.js";
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 const app = createApp(App);
+
+// 加载pinia
+const pinia = createPinia()
+app.use(pinia)
 
 // 加载ElementPlus
 app.use(ElementPlus)
