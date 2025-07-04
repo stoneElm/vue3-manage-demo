@@ -2,7 +2,7 @@
     <div class="wechat-container">
         <div class="wechat-sidebar">
             <div class="search-box">
-                <el-badge :value="loginUserInvitedValue" :max="99" class="item custom-badge" :hidden="loginUserInvitedValue === 0">
+                <el-badge :value="loginUserInvitedList.length" :max="99" class="item custom-badge" :hidden="loginUserInvitedList.length === 0">
                 <el-input placeholder="搜索" prefix-icon="el-icon-search" v-model="searchText" clearable>
                     <template #append>
                         <el-button type="primary" circle @click="dialogVisible = true">
@@ -34,7 +34,7 @@
             <el-tab-pane label="添加好友" name="friend">
                 <template #label>
                     <el-badge :value="unreadMessageValue" :max="99" class="item custom-badge" :hidden="0 === 0">
-                        <span>验证消息</span>
+                        <span>添加好友</span>
                     </el-badge>
                 </template>
                 <el-form ref="friendFormRef" :model="friendForm" :rules="formRules" label-width="100px">
@@ -51,7 +51,7 @@
             <el-tab-pane label="添加群组" name="group">
                 <template #label>
                     <el-badge :value="unreadMessageValue" :max="99" class="item custom-badge" :hidden="0 === 0">
-                        <span>验证消息</span>
+                        <span>添加群组</span>
                     </el-badge>
                 </template>
                 <el-form ref="groupFormRef" :model="groupForm" :rules="formRules" label-width="100px">
@@ -67,16 +67,28 @@
 
             <el-tab-pane label="验证消息" name="addChat">
                 <template #label>
-                    <el-badge :value="loginUserInvitedValue" :max="99" class="item custom-badge" :hidden="loginUserInvitedValue === 0">
-                        <span>验证消息</span>
+                    <el-badge :value="loginUserInvitedList.length" :max="99" class="item custom-badge" :hidden="loginUserInvitedList.length === 0">
+                        <span >验证消息</span>
                     </el-badge>
                 </template>
-                <div v-if="loginUserInvitedValue === 0" class="empty-chat">
+                <div v-if="loginUserInvitedList.length === 0" class="empty-chat">
                     <el-empty description="当前没有要验证的消息" :image-size="70" />
                 </div>
-                <div style="height: 141px;">
-
-                </div>
+                <el-scrollbar v-if="loginUserInvitedList.length !== 0" height="141" class="invited-list">
+                    <div v-for="loginUserInvited in loginUserInvitedList" :key="loginUserInvited.beInvitedObjectID" class="invited-item" >
+                        <el-avatar :size="40" :src="loginUserInvited.avatarUrl" />
+                        <div class="invited-info" style="padding: 0 20px; width: 300px;">
+                            <div style="display: flex; margin-bottom: 4px;">
+                                <div class="username" style="width: 50%;">{{ loginUserInvited.invitedObjectName }}</div>
+                                <!-- <div>在线</div> -->
+                            </div>
+                            <div class="last-message">验证消息：{{ loginUserInvited.verificationMessage }}</div>
+                        </div>
+                        <div class="invited-operate" >
+                            <div class="agree"><el-button link type="primary" @click="agreeConversationRequest">同意</el-button></div>
+                        </div>
+                    </div>
+                </el-scrollbar>
             </el-tab-pane>
         </el-tabs>
         <template #footer>
@@ -90,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import ContactList from '@/views/chat/ContactList.vue'
 import ChatMain from '@/views/chat/ChatMain.vue'
 import { Message, MESSAGE_TYPE } from '@/utils/messageUtil';
@@ -99,7 +111,7 @@ import { selectChatConversationList } from '@/api/chat/chatConversation.js'
 import { createChatConversationAppList } from '@/api/chat/chatConversationApp.js'
 
 const props = defineProps({
-        loginUserInvitedValue: Number
+        loginUserInvitedList: Array
     });
 
 const searchText = ref('')
@@ -114,6 +126,7 @@ const groupFormRef = ref(null)
 
 const unreadMessageValue = ref(0)
 const loginUserInvitedValue = ref(0)
+const loginUserInvitedList = ref([])
 
 const friendForm = ref({
     userId: '',
@@ -123,6 +136,11 @@ const friendForm = ref({
 const groupForm = ref({
     groupId: '',
     message: ''
+})
+
+watch(() => props.loginUserInvitedList, (newVal) => {
+	console.log('数据已更新--子组件:', newVal)
+    loginUserInvitedList.value = newVal
 })
 
 const formRules = {
@@ -142,7 +160,7 @@ const contacts = ref([
     {
         id: 1,
         name: '张三',
-        avatar: 'https://via.placeholder.com/40',
+        avatar: '',
         group: '好友',
         lastMessage: '你好，最近怎么样？',
         lastTime: '10:30',
@@ -151,7 +169,7 @@ const contacts = ref([
     {
         id: 2,
         name: '李四',
-        avatar: 'https://via.placeholder.com/40',
+        avatar: '',
         group: '好友',
         lastMessage: '项目进展如何？',
         lastTime: '昨天',
@@ -174,12 +192,12 @@ onMounted(() => {
     }
 
     let param = {
-        chatConversationActor: JSON.parse(sessionStorage.getItem('userInfo')).userId
+        chatConversationActor: JSON.parse(sessionStorage.getItem('userInfo')).userID
     }
 
-    loginUserInvitedValue.value = props.loginUserInvitedValue
+    loginUserInvitedList.value = props.loginUserInvitedList
 
-    console.log(param)
+    console.log('----- 获取用户ID -----', JSON.parse(sessionStorage.getItem('userInfo')).userID)
 
     // 获取当前用户的会话列表
     selectChatConversationList(param).then(res => {
@@ -222,6 +240,11 @@ function handleSubmit() {
             }
         })
     }
+}
+
+// 同意会话请求
+function agreeConversationRequest() {
+
 }
 
 // 过滤出当前联系人的消息
@@ -319,7 +342,8 @@ const handleSendMessage = (content) => {
 }
 
 .add-container-dialog .el-dialog__body{
-    padding-top: 10px;
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
 .add-container-dialog .empty-chat {
@@ -328,5 +352,44 @@ const handleSendMessage = (content) => {
 
 .add-container-dialog .el-tabs__nav {
     height: 50px;
+}
+
+.demo-tabs .el-badge span{
+    font-size: 15px;
+    padding-left: 24px;
+    color: #505153;
+}
+
+.invited-item {
+    display: flex;
+    padding: 12px;
+    cursor: pointer;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.invited-item:nth-child(1) {
+    padding-top: 0px;
+}
+
+.invited-info div {
+    text-align: left;
+}
+
+.invited-info .username {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.invited-info .invited-operate {
+    font-size: 12px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>

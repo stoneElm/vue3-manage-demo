@@ -30,8 +30,8 @@
 		</el-dropdown>
 	</div>
 
-	<el-dialog v-if="chatDialogVisible" v-model="chatDialogVisible" title="" :show-close="true" class="chat-dialog">
-		<Chat :loginUserInvitedValue="loginUserInvitedValue"></Chat>
+	<el-dialog v-model="chatDialogVisible" title="" :show-close="true" class="chat-dialog">
+		<Chat :loginUserInvitedList="loginUserInvitedList"></Chat>
 	</el-dialog>
 </template>
 
@@ -45,6 +45,10 @@ import Chat from '@/views/chat/chat.vue'
 
 import { logout } from '@/api/userApi/userLoginApi'
 import { selectLoginUserInvitedInfo } from '@/api/chat/chatConversationApp.js'
+
+import api from "@/api/api.js";
+
+var baseURL = api.defaults.baseURL;
 
 // 弹框显示状态
 const chatDialogVisible = ref(false)
@@ -60,11 +64,15 @@ const route = useRouter();
 const circleUrl = ref(null);
 
 const wsStore = useWebSocketStore();
-const { message } = useWebSocketStore();
 
 const reminderMessageValue = ref(0)
 const loginUserInvitedValue = ref(0)
+const loginUserInvitedList = ref([])
 const unreadMessageValue = ref(0)
+
+watch(() => loginUserInvitedList.value, (newVal) => {
+	console.log('数据已更新--父组件:', newVal)
+})
 
 // 组件加载完成时执行
 onMounted(() => {
@@ -87,13 +95,18 @@ onMounted(() => {
 			getNumberOfUnreadMessages();
 		}
 	}
+
+	// 获取头像
+	circleUrl.value = baseURL + '/attachment/files/filePreview?'
+		+ 'attachDtlID=' + JSON.parse(sessionStorage.getItem('userInfo')).avatarAttachDtlID
+		+ '&stoneFileToken=' + sessionStorage.getItem('Stone-Token')
 });
 
 // 组件卸载时执行
 onUnmounted(() => {
 	console.log("关闭webSocket会话连接")
 	if (wsStore.socket) {
-		wsStore.connected()
+		wsStore.disconnect();
 	}
 });
 
@@ -103,7 +116,17 @@ function getNumberOfUnreadMessages() {
 	selectLoginUserInvitedInfo({}).then(res => {
 		if (res.code == '00000') {
 			console.log('--- 查询聊天会话待邀请成功 ---', res.data);
+
+			res.data.forEach((value, index, array) => {
+				if (value.avatarAttachDtlID) {
+					value.avatarUrl = baseURL + '/attachment/files/filePreview?'
+						+ 'attachDtlID=' + value.avatarAttachDtlID
+						+ '&stoneFileToken=' + sessionStorage.getItem('Stone-Token')
+				}
+			});
+
 			loginUserInvitedValue.value = res.total
+			loginUserInvitedList.value = res.data
 			reminderMessageValue.value = loginUserInvitedValue.value + unreadMessageValue.value
 		}
 	})
