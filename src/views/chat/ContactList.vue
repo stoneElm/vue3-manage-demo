@@ -2,16 +2,18 @@
     <div class="contact-list">
         <el-scrollbar>
             <el-collapse v-model="activeGroups" accordion>
-                <el-collapse-item v-for="group in groupedContacts" :key="group.name" :name="group.name" :title="`${group.name} (${group.contacts.length})`">
-                    <div v-for="contact in group.contacts" :key="contact.id" class="contact-item" :class="{ active: contact.id === activeContact?.id }" @click="$emit('select', contact)">
-                        <el-avatar :size="40" :src="contact.avatar" />
+                <el-collapse-item v-for="group in groupedContacts" :key="group.name" :name="group.name"
+                    :title="`${group.name} (${group.contacts.length})`">
+                    <div v-for="contact in group.contacts" :key="contact.chatConversationID" class="contact-item"
+                        :class="{ active: contact.chatConversationID === activeContact?.chatConversationID }" @click="$emit('select', contact)">
+                        <el-avatar :size="40" :src="contact.avatarUrl" />
                         <div class="contact-info">
-                            <div class="name">{{ contact.name }}</div>
-                            <div class="last-message">{{ contact.lastMessage }}</div>
+                            <div class="name">{{ contact.conversationNickName }}</div>
+                            <div class="last-message">{{ contact.conversationLastMessage }}</div>
                         </div>
                         <div class="contact-meta">
-                            <div class="time">{{ contact.lastTime }}</div>
-                            <el-badge v-if="contact.unread > 0" :value="contact.unread" class="badge" />
+                            <div class="time">{{ contact.conversationLastMessageDate }}</div>
+                            <el-badge v-if="contact.unreadMessagesNumber > 0" :value="contact.unreadMessagesNumber" class="badge" />
                         </div>
                     </div>
                 </el-collapse-item>
@@ -20,45 +22,41 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { computed, ref } from 'vue'
 
-export default {
-    props: {
-        contacts: {
-            type: Array,
-            required: true
-        },
-        activeContact: {
-            type: Object,
-            default: null
-        }
+const props = defineProps({
+    contacts: {
+        type: Array,
+        required: true
     },
-    setup(props) {
-        const activeGroups = ref(['好友']) // 默认展开好友分组
-    
-        // 按分组组织联系人
-        const groupedContacts = computed(() => {
-            const groups = {}
-            props.contacts.forEach(contact => {
-                if (!groups[contact.group]) {
-                    groups[contact.group] = []
-                }
-                groups[contact.group].push(contact)
-            })
-      
-            return Object.keys(groups).map(name => ({
-                name,
-                contacts: groups[name]
-            }))
-        })
-    
-        return {
-            activeGroups,
-            groupedContacts
+    activeContact: {
+        type: Object,
+        default: null
+    },
+    loginUserConversationList: Array
+});
+
+
+const activeGroups = ref(['好友']) // 默认展开好友分组
+
+// 按分组组织联系人
+const groupedContacts = computed(() => {
+    const groups = {}
+    props.contacts.forEach(contact => {
+        if (!groups[contact.group]) {
+            groups[contact.group] = []
         }
-  }
-}
+        groups[contact.group].push(contact)
+    })
+
+    return Object.keys(groups).map(name => ({
+        name,
+        contacts: groups[name]
+    }))
+})
+
+
 </script>
 
 <style scoped>
@@ -84,9 +82,9 @@ export default {
 }
 
 .contact-info {
-    flex: 1;
     margin-left: 12px;
     overflow: hidden;
+    width: 120px;
 }
 
 .contact-info .name {

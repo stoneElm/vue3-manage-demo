@@ -10,6 +10,13 @@ export const selectChatConversationList = (data) =>
         data
     })
 
+export const selectLoginUserConversationList = (data) =>
+    requert({
+        method: "POST",
+        url: baseURL + '/chat/chatConversation/selectLoginUserConversationList',
+        data
+    })
+
 export const createChatConversationList = (data) =>
     requert({
         method: "POST",

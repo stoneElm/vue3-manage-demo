@@ -1,34 +1,46 @@
 <template>
-    <div class="message-item" :class="{ 'is-me': message.isMe }">
+    <div class="message-item" :class="{ 'is-me': message.currentUserMessage }">
+        <el-avatar :size="36" :src="message.currentUserMessage ? myAvatarUrl : message.avatarUrl" />
         <div class="message-content">
-            <div v-if="message.sender && !message.isMe" class="message-sender">哈哈{{ message.sender }}</div>
+            <div v-if="false" class="message-sender"></div>
             <div class="message-bubble">{{ message.content }}</div>
-            <div class="message-time">{{ message.time }}</div>
+            <div class="message-time">{{ message.messageSendDateStr }}</div>
         </div>
-        <el-avatar :size="36" :src="message.isMe ? myAvatar : contactAvatar" />
     </div>
 </template>
 
-<script>
-import { computed } from 'vue'
+<script setup>
+import { ref, defineProps, onMounted, watch } from 'vue'
+import api from "@/api/api.js";
 
-export default {
-    props: {
-        message: {
-            type: Object,
-            required: true
-        }
-    },
-    setup() {
-        const myAvatar = 'https://via.placeholder.com/36/0084ff/ffffff?text=ME'
-        const contactAvatar = 'https://via.placeholder.com/36'
-    
-        return {
-            myAvatar,
-            contactAvatar
-        }
-    }
-}
+const otherAvatarUrl = ref('')
+const myAvatarUrl = ref('')
+
+const props = defineProps({
+    otherAvatarUrl: String,
+    message: Object
+});
+
+watch(() => props.otherAvatarUrl, (newVal) => {
+    // console.log('数据已更新--对话头像信息--孙子组件:', newVal)
+    otherAvatarUrl.value = newVal
+})
+
+onMounted(() => {
+    // 如果未登录
+	if (!sessionStorage.getItem('Stone-Token')) {
+		console.log('当前用户未登录，不加载头像！')
+		return;
+	}
+
+    // 获取头像
+	myAvatarUrl.value = api.defaults.baseURL + '/attachment/files/filePreview?'
+		+ 'attachDtlID=' + JSON.parse(sessionStorage.getItem('userInfo')).avatarAttachDtlID
+		+ '&stoneFileToken=' + sessionStorage.getItem('Stone-Token')
+
+})
+
+
 </script>
 
 <style scoped>

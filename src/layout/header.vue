@@ -31,7 +31,7 @@
 	</div>
 
 	<el-dialog v-model="chatDialogVisible" title="" :show-close="true" class="chat-dialog">
-		<Chat :loginUserInvitedList="loginUserInvitedList"></Chat>
+		<Chat :loginUserInvitedList="loginUserInvitedList" :loginUserConversationList="loginUserConversationList"></Chat>
 	</el-dialog>
 </template>
 
@@ -45,6 +45,7 @@ import Chat from '@/views/chat/chat.vue'
 
 import { logout } from '@/api/userApi/userLoginApi'
 import { selectLoginUserInvitedInfo } from '@/api/chat/chatConversationApp.js'
+import { selectLoginUserConversationList } from '@/api/chat/chatConversation.js'
 
 import api from "@/api/api.js";
 
@@ -68,10 +69,15 @@ const wsStore = useWebSocketStore();
 const reminderMessageValue = ref(0)
 const loginUserInvitedValue = ref(0)
 const loginUserInvitedList = ref([])
+const loginUserConversationList = ref([])
 const unreadMessageValue = ref(0)
 
 watch(() => loginUserInvitedList.value, (newVal) => {
-	console.log('数据已更新--父组件:', newVal)
+	console.log('数据已更新--用户受邀信息--父组件:', newVal)
+})
+
+watch(() => loginUserConversationList.value, (newVal) => {
+	console.log('数据已更新--用户会话信息--父组件:', newVal)
 })
 
 // 组件加载完成时执行
@@ -91,7 +97,9 @@ onMounted(() => {
 		if (message.messageType === 'Refresh unread') {
 			console.log('webSocket 刷新未读消息！')
 
-			// 获取未读消息数量
+			// 获取当前用户受邀信息
+			getLoginUserInvitedInfo();
+			// 聊天会话信息
 			getNumberOfUnreadMessages();
 		}
 	}
@@ -111,6 +119,29 @@ onUnmounted(() => {
 });
 
 function getNumberOfUnreadMessages() {
+	selectLoginUserConversationList({}).then(res => {
+		if (res.code == '00000') {
+			console.log('--- 查询聊天会话列表成功 ---', res);
+
+			res.data.forEach((value, index, array) => {
+				if (value.avatarAttachDtlID) {
+					value.avatarUrl = baseURL + '/attachment/files/filePreview?'
+						+ 'attachDtlID=' + value.avatarAttachDtlID
+						+ '&stoneFileToken=' + sessionStorage.getItem('Stone-Token')
+				}
+				value.group = '好友'
+			});
+
+			console.log('--- 查询聊天会话列表成功 ---', res);
+
+			unreadMessageValue.value = res.total
+			loginUserConversationList.value = res.data
+			reminderMessageValue.value = loginUserInvitedValue.value + unreadMessageValue.value
+		}
+	})
+}
+
+function getLoginUserInvitedInfo() {
 	// 聊天会话待邀请信息
 
 	selectLoginUserInvitedInfo({}).then(res => {

@@ -2,24 +2,25 @@
     <div class="wechat-container">
         <div class="wechat-sidebar">
             <div class="search-box">
-                <el-badge :value="loginUserInvitedList.length" :max="99" class="item custom-badge" :hidden="loginUserInvitedList.length === 0">
-                <el-input placeholder="搜索" prefix-icon="el-icon-search" v-model="searchText" clearable>
-                    <template #append>
-                        <el-button type="primary" circle @click="dialogVisible = true">
-                            <el-icon>
-                                <Plus />
-                            </el-icon>
-                        </el-button>
-                    </template>
-                </el-input>
+                <el-badge :value="loginUserInvitedList.length" :max="99" class="item custom-badge"
+                    :hidden="loginUserInvitedList.length === 0">
+                    <el-input placeholder="搜索" prefix-icon="el-icon-search" v-model="searchText" clearable>
+                        <template #append>
+                            <el-button type="primary" circle @click="dialogVisible = true">
+                                <el-icon>
+                                    <Plus />
+                                </el-icon>
+                            </el-button>
+                        </template>
+                    </el-input>
                 </el-badge>
 
             </div>
-            <contact-list :contacts="contacts" :active-contact="activeContact" @select="handleSelectContact" />
+            <contact-list :contacts="loginUserConversationList" :active-contact="activeContact"
+                @select="handleSelectContact" />
         </div>
         <div class="wechat-main">
-            <chat-main v-if="activeContact" :contact="activeContact" :messages="filteredMessages"
-                @send="handleSendMessage" />
+            <chat-main v-if="activeContact" :contact="activeContact" :messages="messages" :otherAvatarUrl="otherAvatarUrl" @send-message="handleSendMessage" />
             <div v-else class="empty-chat">
                 <el-empty description="请选择聊天对象" />
             </div>
@@ -39,7 +40,7 @@
                 </template>
                 <el-form ref="friendFormRef" :model="friendForm" :rules="formRules" label-width="100px">
                     <el-form-item label="用户ID/账号" prop="userId">
-                        <el-input v-model="friendForm.userId" placeholder="请输入用户ID或账号" clearable />
+                        <el-input v-model="friendForm.userId" placeholder="请输入用户账号" clearable />
                     </el-form-item>
                     <el-form-item label="验证信息" prop="message">
                         <el-input v-model="friendForm.message" type="textarea" :rows="3" placeholder="请输入验证信息（可选）"
@@ -56,7 +57,7 @@
                 </template>
                 <el-form ref="groupFormRef" :model="groupForm" :rules="formRules" label-width="100px">
                     <el-form-item label="群组ID/名称" prop="groupId">
-                        <el-input v-model="groupForm.groupId" placeholder="请输入群组ID或名称" clearable />
+                        <el-input v-model="groupForm.groupId" placeholder="请输入群组ID" clearable />
                     </el-form-item>
                     <el-form-item label="验证信息" prop="message">
                         <el-input v-model="groupForm.message" type="textarea" :rows="3" placeholder="请输入验证信息（可选）"
@@ -67,25 +68,29 @@
 
             <el-tab-pane label="验证消息" name="addChat">
                 <template #label>
-                    <el-badge :value="loginUserInvitedList.length" :max="99" class="item custom-badge" :hidden="loginUserInvitedList.length === 0">
-                        <span >验证消息</span>
+                    <el-badge :value="loginUserInvitedList.length" :max="99" class="item custom-badge"
+                        :hidden="loginUserInvitedList.length === 0">
+                        <span>验证消息</span>
                     </el-badge>
                 </template>
                 <div v-if="loginUserInvitedList.length === 0" class="empty-chat">
                     <el-empty description="当前没有要验证的消息" :image-size="70" />
                 </div>
                 <el-scrollbar v-if="loginUserInvitedList.length !== 0" height="141" class="invited-list">
-                    <div v-for="loginUserInvited in loginUserInvitedList" :key="loginUserInvited.beInvitedObjectID" class="invited-item" >
+                    <div v-for="loginUserInvited in loginUserInvitedList" :key="loginUserInvited.beInvitedObjectID"
+                        class="invited-item">
                         <el-avatar :size="40" :src="loginUserInvited.avatarUrl" />
                         <div class="invited-info" style="padding: 0 20px; width: 300px;">
                             <div style="display: flex; margin-bottom: 4px;">
-                                <div class="username" style="width: 50%;">{{ loginUserInvited.invitedObjectName }}</div>
-                                <!-- <div>在线</div> -->
+                                <div class="username" style="width: 40%;">账户：{{ loginUserInvited.invitedObjectName }}
+                                </div>
+                                <div class="nick-name" style="width: 60%;">昵称：{{ loginUserInvited.nickName }}</div>
                             </div>
                             <div class="last-message">验证消息：{{ loginUserInvited.verificationMessage }}</div>
                         </div>
-                        <div class="invited-operate" >
-                            <div class="agree"><el-button link type="primary" @click="agreeConversationRequest">同意</el-button></div>
+                        <div class="invited-operate">
+                            <div class="agree"><el-button link type="primary"
+                                    @click="agreeConversationRequest">同意</el-button></div>
                         </div>
                     </div>
                 </el-scrollbar>
@@ -94,7 +99,7 @@
         <template #footer>
             <span class="dialog-footer">
                 <el-button @click="dialogVisible = false">取消</el-button>
-                <el-button type="primary" @click="handleSubmit">确定</el-button>
+                <el-button type="primary" @click="handleSubmit" :disabled="submitDisabled">确定</el-button>
             </span>
         </template>
     </el-dialog>
@@ -107,12 +112,15 @@ import ContactList from '@/views/chat/ContactList.vue'
 import ChatMain from '@/views/chat/ChatMain.vue'
 import { Message, MESSAGE_TYPE } from '@/utils/messageUtil';
 
-import { selectChatConversationList } from '@/api/chat/chatConversation.js'
+import api from "@/api/api.js";
+
+import { selectChatMessageListByConversationID, createChatMessageList } from '@/api/chat/chatMessage.js'
 import { createChatConversationAppList } from '@/api/chat/chatConversationApp.js'
 
 const props = defineProps({
-        loginUserInvitedList: Array
-    });
+    loginUserInvitedList: Array,
+    loginUserConversationList: Array
+});
 
 const searchText = ref('')
 const activeContact = ref(null)
@@ -125,8 +133,10 @@ const friendFormRef = ref(null)
 const groupFormRef = ref(null)
 
 const unreadMessageValue = ref(0)
-const loginUserInvitedValue = ref(0)
+const loginUserConversationList = ref([])
 const loginUserInvitedList = ref([])
+
+const submitDisabled = ref(false)
 
 const friendForm = ref({
     userId: '',
@@ -138,9 +148,29 @@ const groupForm = ref({
     message: ''
 })
 
+const otherAvatarUrl = ref('')
+
 watch(() => props.loginUserInvitedList, (newVal) => {
-	console.log('数据已更新--子组件:', newVal)
+    console.log('数据已更新--受邀信息--子组件:', newVal)
     loginUserInvitedList.value = newVal
+})
+
+watch(() => props.loginUserConversationList, (newVal) => {
+    console.log('数据已更新--会话信息--子组件:', newVal)
+    loginUserConversationList.value = newVal
+})
+
+watch(() => props.otherAvatarUrl, (newVal) => {
+    // console.log('数据已更新--对话头像信息--父组件:', newVal)
+    otherAvatarUrl.value = newVal
+})
+
+watch(() => activeTab.value, (newVal) => {
+    if (activeTab.value === 'addChat') {
+        submitDisabled.value = true
+    } else {
+        submitDisabled.value = false
+    }
 })
 
 const formRules = {
@@ -167,13 +197,13 @@ const contacts = ref([
         unread: 2
     },
     {
-        id: 2,
-        name: '李四',
-        avatar: '',
+        chatConversationID: 2,
+        conversationNickName: '李四',
+        avatarUrl: '',
         group: '好友',
-        lastMessage: '项目进展如何？',
-        lastTime: '昨天',
-        unread: 0
+        conversationLastMessage: '项目进展如何？',
+        conversationLastMessageDate: '昨天',
+        unreadMessagesNumber: 0
     }
 ])
 
@@ -187,25 +217,12 @@ const messages = ref([
 ])
 
 onMounted(() => {
+    loginUserInvitedList.value = props.loginUserInvitedList
+    loginUserConversationList.value = props.loginUserConversationList
+
     if (!sessionStorage.getItem('Stone-Token')) {
         return;
     }
-
-    let param = {
-        chatConversationActor: JSON.parse(sessionStorage.getItem('userInfo')).userID
-    }
-
-    loginUserInvitedList.value = props.loginUserInvitedList
-
-    console.log('----- 获取用户ID -----', JSON.parse(sessionStorage.getItem('userInfo')).userID)
-
-    // 获取当前用户的会话列表
-    selectChatConversationList(param).then(res => {
-        if (res.code == '00000') {
-            console.log('--- 获取当前用户的会话列表： ---', res.data);
-            messages.value = res.data
-        }
-    })
 })
 
 // 添加到会话
@@ -217,7 +234,7 @@ function handleSubmit() {
                 let param = [{
                     beInvitedObjectName: friendForm.value.userId
                 }]
-                
+
                 createChatConversationAppList(param).then(res => {
                     if (res.code == '00000') {
                         console.log('--- 申请信息发送成功 ---', res.data);
@@ -231,7 +248,7 @@ function handleSubmit() {
                 return false
             }
         })
-    } else {
+    } else if ((activeTab.value === 'group')) {
         groupFormRef.value.validate((valid) => {
             if (valid) {
                 addGroup()
@@ -247,42 +264,61 @@ function agreeConversationRequest() {
 
 }
 
-// 过滤出当前联系人的消息
-const filteredMessages = computed(() => {
-    if (!activeContact.value) return []
-    return messages.value.filter(msg => msg.contactId === activeContact.value.id)
-})
-
 // 选择联系人
 const handleSelectContact = (contact) => {
     activeContact.value = contact
-    // 标记为已读
-    const index = contacts.value.findIndex(c => c.id === contact.id)
-    if (index !== -1) {
-        contacts.value[index].unread = 0
+
+    console.log('----- 当前选择会话信息 -----', contact);
+
+    otherAvatarUrl.value = contact.avatarUrl
+
+    let param = {
+        chatConversationID: activeContact.value.chatConversationID
     }
+
+    // 查询当前会话消息
+    selectChatMessageListByConversationID(param).then(res => {
+        if (res.code == '00000') {
+
+            res.data.forEach((value, index, array) => {
+				if (value.avatarAttachDtlID) {
+					value.avatarUrl = api.defaults.baseURL + '/attachment/files/filePreview?'
+						+ 'attachDtlID=' + value.avatarAttachDtlID
+						+ '&stoneFileToken=' + sessionStorage.getItem('Stone-Token')
+				}
+			});
+
+            console.log('--- 通过会话唯一标识查询聊天记录成功 ---', res.data);
+
+            messages.value = res.data
+        }
+    })
+
+    // 消息标记为已读
+
 }
 
 // 发送消息
 const handleSendMessage = (content) => {
     if (!activeContact.value) return
 
-    const newMessage = {
-        id: messages.value.length + 1,
-        contactId: activeContact.value.id,
-        content,
-        time: new Date().toLocaleTimeString(),
-        isMe: true
-    }
+    const newMessage = [{
+        chatConversationNo: activeContact.value.chatConversationNo,
+        messageType: "01",
+        senderID: activeContact.value.chatConversationActorID,
+        receiver_id: activeContact.value.conversationObjectID,
+        content: content
+    }]
 
-    messages.value.push(newMessage)
+    console.log('----- 发送消息钩子 -----', newMessage)
 
-    // 更新联系人最后一条消息
-    const contactIndex = contacts.value.findIndex(c => c.id === activeContact.value.id)
-    if (contactIndex !== -1) {
-        contacts.value[contactIndex].lastMessage = content
-        contacts.value[contactIndex].lastTime = '刚刚'
-    }
+    createChatMessageList(newMessage).then(res => {
+        if (res.code == '00000') {
+            console.log('--- 聊天消息发送成功 ---', res.data);
+        } else {
+            Message('申请信息发送失败！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR)
+        }
+    })
 }
 
 </script>
@@ -341,7 +377,7 @@ const handleSendMessage = (content) => {
     --el-dialog-width: calc(30vw);
 }
 
-.add-container-dialog .el-dialog__body{
+.add-container-dialog .el-dialog__body {
     padding-top: 0px;
     padding-bottom: 0px;
 }
@@ -354,7 +390,7 @@ const handleSendMessage = (content) => {
     height: 50px;
 }
 
-.demo-tabs .el-badge span{
+.demo-tabs .el-badge span {
     font-size: 15px;
     padding-left: 24px;
     color: #505153;
@@ -378,7 +414,6 @@ const handleSendMessage = (content) => {
 
 .invited-info .username {
     font-size: 14px;
-    color: #333;
     margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
