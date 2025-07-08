@@ -31,7 +31,7 @@
 	</div>
 
 	<el-dialog v-model="chatDialogVisible" title="" :show-close="true" class="chat-dialog">
-		<Chat :loginUserInvitedList="loginUserInvitedList" :loginUserConversationList="loginUserConversationList"></Chat>
+		<Chat :loginUserInvitedList="loginUserInvitedList" :loginUserConversationList="loginUserConversationList" :refreshSessionReminder="refreshSessionReminder" @read-sessage="getNumberOfUnreadMessages"></Chat>
 	</el-dialog>
 </template>
 
@@ -48,6 +48,7 @@ import { selectLoginUserInvitedInfo } from '@/api/chat/chatConversationApp.js'
 import { selectLoginUserConversationList } from '@/api/chat/chatConversation.js'
 
 import api from "@/api/api.js";
+import dateUtils from '@/utils/dateUtil.js' // 根据实际路径调整
 
 var baseURL = api.defaults.baseURL;
 
@@ -72,6 +73,8 @@ const loginUserInvitedList = ref([])
 const loginUserConversationList = ref([])
 const unreadMessageValue = ref(0)
 
+const refreshSessionReminder = ref({})
+
 watch(() => loginUserInvitedList.value, (newVal) => {
 	console.log('数据已更新--用户受邀信息--父组件:', newVal)
 })
@@ -79,6 +82,10 @@ watch(() => loginUserInvitedList.value, (newVal) => {
 watch(() => loginUserConversationList.value, (newVal) => {
 	console.log('数据已更新--用户会话信息--父组件:', newVal)
 })
+
+watch(() => refreshSessionReminder.value, (newVal) => {
+	console.log('数据已更新--刷新会话提醒--父组件:', newVal)
+},{ deep: true })
 
 // 组件加载完成时执行
 onMounted(() => {
@@ -94,12 +101,29 @@ onMounted(() => {
 	wsStore.onmessage = (event) => {
 		let message = JSON.parse(event.data);
 
-		if (message.messageType === 'Refresh unread') {
-			console.log('webSocket 刷新未读消息！')
+		if (message.messageType === 'Refresh all message') {
+			console.log('webSocket 刷新所有未读消息！')
 
 			// 获取当前用户受邀信息
 			getLoginUserInvitedInfo();
 			// 聊天会话信息
+			getNumberOfUnreadMessages();
+		}
+
+		if (message.messageType === 'Refresh session invitation') {
+			console.log('webSocket 刷新聊天会话受邀请信息！')
+
+			// 获取当前用户受邀信息
+			getLoginUserInvitedInfo();
+		}
+
+		if (message.messageType === 'Refresh unread message') {
+			console.log('webSocket 刷新客户端未读消息！')
+
+			refreshSessionReminder.value.uuid = dateUtils.generateUUID()
+			refreshSessionReminder.value.chatConversationNo = JSON.parse(message.messageContent).chatConversationNo;
+
+			// 获取当前用户未读消息
 			getNumberOfUnreadMessages();
 		}
 	}
@@ -231,6 +255,10 @@ function exit() {
 .item {
 	margin-top: 10px;
 	margin-right: 40px;
+}
+
+.chat-dialog.el-dialog {
+    
 }
 
 .chat-dialog>.el-dialog__body {

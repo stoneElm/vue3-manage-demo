@@ -20,7 +20,8 @@
                 @select="handleSelectContact" />
         </div>
         <div class="wechat-main">
-            <chat-main v-if="activeContact" :contact="activeContact" :messages="messages" :otherAvatarUrl="otherAvatarUrl" @send-message="handleSendMessage" />
+            <chat-main v-if="activeContact" :contact="activeContact" :messages="messages"
+                :otherAvatarUrl="otherAvatarUrl" @send-message="handleSendMessage" />
             <div v-else class="empty-chat">
                 <el-empty description="请选择聊天对象" />
             </div>
@@ -107,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, defineEmits, onMounted } from 'vue'
 import ContactList from '@/views/chat/ContactList.vue'
 import ChatMain from '@/views/chat/ChatMain.vue'
 import { Message, MESSAGE_TYPE } from '@/utils/messageUtil';
@@ -116,11 +117,15 @@ import api from "@/api/api.js";
 
 import { selectChatMessageListByConversationID, createChatMessageList } from '@/api/chat/chatMessage.js'
 import { createChatConversationAppList } from '@/api/chat/chatConversationApp.js'
+import { markReadMessageForCurrentLogin } from '@/api/chat/chatConversationMessageRelated.js'
 
 const props = defineProps({
     loginUserInvitedList: Array,
-    loginUserConversationList: Array
+    loginUserConversationList: Array,
+    refreshSessionReminder: Object
 });
+
+const emit = defineEmits(['read-sessage']);
 
 const searchText = ref('')
 const activeContact = ref(null)
@@ -137,6 +142,8 @@ const loginUserConversationList = ref([])
 const loginUserInvitedList = ref([])
 
 const submitDisabled = ref(false)
+
+const refreshSessionReminder = ref({})
 
 const friendForm = ref({
     userId: '',
@@ -165,6 +172,17 @@ watch(() => props.otherAvatarUrl, (newVal) => {
     otherAvatarUrl.value = newVal
 })
 
+watch(() => props.refreshSessionReminder, (newVal) => {
+    console.log('数据已更新--刷新会话提醒--子组件:', newVal)
+    refreshSessionReminder.value = newVal
+
+    if (newVal && newVal.chatConversationNo && newVal.chatConversationNo === activeContact.value.chatConversationNo) {
+        // 刷新消息
+        handleSelectContact(activeContact.value)
+        refreshSessionReminder.value = null;
+    }
+}, { deep: true })
+
 watch(() => activeTab.value, (newVal) => {
     if (activeTab.value === 'addChat') {
         submitDisabled.value = true
@@ -186,39 +204,15 @@ const formRules = {
 
 
 // 模拟联系人数据
-const contacts = ref([
-    {
-        id: 1,
-        name: '张三',
-        avatar: '',
-        group: '好友',
-        lastMessage: '你好，最近怎么样？',
-        lastTime: '10:30',
-        unread: 2
-    },
-    {
-        chatConversationID: 2,
-        conversationNickName: '李四',
-        avatarUrl: '',
-        group: '好友',
-        conversationLastMessage: '项目进展如何？',
-        conversationLastMessageDate: '昨天',
-        unreadMessagesNumber: 0
-    }
-])
+const contacts = ref([])
 
 // 模拟消息数据
-const messages = ref([
-    { id: 1, contactId: 1, content: '你好，最近怎么样？', time: '10:30', isMe: false },
-    { id: 2, contactId: 1, content: '还不错，项目刚上线', time: '10:32', isMe: true },
-    { id: 3, contactId: 1, content: '你呢？', time: '10:32', isMe: true },
-    { id: 4, contactId: 2, content: '项目进展如何？', time: '09:15', isMe: false },
-    { id: 5, contactId: 3, content: '这个问题怎么解决？', time: '昨天 15:30', isMe: false, sender: '王五' }
-])
+const messages = ref([])
 
 onMounted(() => {
     loginUserInvitedList.value = props.loginUserInvitedList
     loginUserConversationList.value = props.loginUserConversationList
+    refreshSessionReminder.value = props.refreshSessionReminder
 
     if (!sessionStorage.getItem('Stone-Token')) {
         return;
@@ -281,20 +275,35 @@ const handleSelectContact = (contact) => {
         if (res.code == '00000') {
 
             res.data.forEach((value, index, array) => {
-				if (value.avatarAttachDtlID) {
-					value.avatarUrl = api.defaults.baseURL + '/attachment/files/filePreview?'
-						+ 'attachDtlID=' + value.avatarAttachDtlID
-						+ '&stoneFileToken=' + sessionStorage.getItem('Stone-Token')
-				}
-			});
+                if (value.avatarAttachDtlID) {
+                    value.avatarUrl = api.defaults.baseURL + '/attachment/files/filePreview?'
+                        + 'attachDtlID=' + value.avatarAttachDtlID
+                        + '&stoneFileToken=' + sessionStorage.getItem('Stone-Token')
+                }
+            });
 
             console.log('--- 通过会话唯一标识查询聊天记录成功 ---', res.data);
 
             messages.value = res.data
+
+            // 判断当前消息是否有未读
+            const findItem = messages.value.find(item => item.isRead === '01');
+
+            if (!findItem) {
+                return;
+            }
+
+            // 当前会话消息已读
+            markReadMessageForCurrentLogin([param]).then(response => {
+                if (response.code == '00000') {
+                    console.log('--- 标记会话消息为已读成功 ---', param.chatConversationID);
+                    
+                    // 通知父组件刷新会话列表
+                    emit('read-sessage', activeContact.value.chatConversationID);
+                }
+            })
         }
     })
-
-    // 消息标记为已读
 
 }
 
@@ -315,6 +324,14 @@ const handleSendMessage = (content) => {
     createChatMessageList(newMessage).then(res => {
         if (res.code == '00000') {
             console.log('--- 聊天消息发送成功 ---', res.data);
+            handleSelectContact(activeContact.value)
+
+            loginUserConversationList.value.forEach((value, index, array) => {
+                if (value.chatConversationID === activeContact.value.chatConversationID) {
+                    value.conversationLastMessage = content
+                    value.conversationLastMessageDate = '刚刚'
+                }
+            });
         } else {
             Message('申请信息发送失败！', MESSAGE_TYPE.MESSAGE_TYPE_ERROR)
         }

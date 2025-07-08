@@ -6,7 +6,7 @@
                     :title="`${group.name} (${group.contacts.length})`">
                     <div v-for="contact in group.contacts" :key="contact.chatConversationID" class="contact-item"
                         :class="{ active: contact.chatConversationID === activeContact?.chatConversationID }" @click="$emit('select', contact)">
-                        <el-avatar :size="40" :src="contact.avatarUrl" />
+                        <el-avatar :size="40" :src="contact.avatarUrl" :class="{ 'online': contact.conversationOnLineStat === '02' }"/>
                         <div class="contact-info">
                             <div class="name">{{ contact.conversationNickName }}</div>
                             <div class="last-message">{{ contact.conversationLastMessage }}</div>
@@ -79,6 +79,10 @@ const groupedContacts = computed(() => {
 
 .contact-item.active {
     background-color: #e6e6e6;
+}
+
+.contact-item .el-avatar.online{
+    border: 2px solid #409eff;
 }
 
 .contact-info {
