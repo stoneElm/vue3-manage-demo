@@ -91,7 +91,7 @@
                         </div>
                         <div class="invited-operate">
                             <div class="agree"><el-button link type="primary"
-                                    @click="agreeConversationRequest">同意</el-button></div>
+                                    @click="agreeConversationRequest(loginUserInvited.invitedObjectName)">同意</el-button></div>
                         </div>
                     </div>
                 </el-scrollbar>
@@ -225,6 +225,7 @@ function handleSubmit() {
         friendFormRef.value.validate((valid) => {
             if (valid) {
                 // 发送会话验证申请到被申请人
+
                 let param = [{
                     beInvitedObjectName: friendForm.value.userId
                 }]
@@ -254,8 +255,18 @@ function handleSubmit() {
 }
 
 // 同意会话请求
-function agreeConversationRequest() {
+function agreeConversationRequest(invitedObjectName) {
 
+    let param = [{
+        beInvitedObjectName: invitedObjectName
+    }]
+
+    createChatConversationAppList(param).then(res => {
+        if (res.code == '00000') {
+            console.log('--- 申请信息发送成功 ---', res.data);
+            Message('添加会话成功！', MESSAGE_TYPE.MESSAGE_TYPE_SUCCESS)
+        }
+    })
 }
 
 // 选择联系人
@@ -265,6 +276,8 @@ const handleSelectContact = (contact) => {
     console.log('----- 当前选择会话信息 -----', contact);
 
     otherAvatarUrl.value = contact.avatarUrl
+
+    messages.value = [];
 
     let param = {
         chatConversationID: activeContact.value.chatConversationID
@@ -297,7 +310,7 @@ const handleSelectContact = (contact) => {
             markReadMessageForCurrentLogin([param]).then(response => {
                 if (response.code == '00000') {
                     console.log('--- 标记会话消息为已读成功 ---', param.chatConversationID);
-                    
+
                     // 通知父组件刷新会话列表
                     emit('read-sessage', activeContact.value.chatConversationID);
                 }
