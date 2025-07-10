@@ -176,7 +176,7 @@ watch(() => props.refreshSessionReminder, (newVal) => {
     console.log('数据已更新--刷新会话提醒--子组件:', newVal)
     refreshSessionReminder.value = newVal
 
-    if (newVal && newVal.chatConversationNo && newVal.chatConversationNo === activeContact.value.chatConversationNo) {
+    if (newVal && newVal.chatConversationNo && activeContact.value && newVal.chatConversationNo === activeContact.value.chatConversationNo) {
         // 刷新消息
         handleSelectContact(activeContact.value)
         refreshSessionReminder.value = null;
@@ -356,8 +356,8 @@ const handleSendMessage = (content) => {
 <style>
 .wechat-container {
     display: flex;
-    width: calc(50vw);
-    height: 50vh;
+    width: calc(1000px);
+    height: calc(650px);
     overflow: hidden;
 }
 

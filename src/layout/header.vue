@@ -258,7 +258,7 @@ function exit() {
 }
 
 .chat-dialog.el-dialog {
-    
+    width: 1000px !important;
 }
 
 .chat-dialog>.el-dialog__body {
